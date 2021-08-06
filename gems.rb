@@ -15,6 +15,7 @@ def github(repo, options = {}, &block)
 end
 
 group :default do
+  gem 'concurrent-ruby', '~> 1.1.9'
   gem 'dry-auto_inject', '~> 0.8.0'
   gem 'dry-container', '~> 0.8.0'
   gem 'hanami-router', '~> 1.3.2'
@@ -35,6 +36,7 @@ group :development do
   # web ----------------------------------
   gem 'better_errors', '~> 2.9.1'
   gem 'binding_of_caller', '~> 1.0.0'
+  gem 'concurrent-ruby-ext', '~> 1.1.9'
   github 'ksylvest/rhino', { branch: 'master' }
   github 'alexch/rerun', { branch: 'master' }
   github 'sqm/http_router', { branch: 'master' }
