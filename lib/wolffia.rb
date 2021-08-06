@@ -29,13 +29,6 @@ class Wolffia
   # @return [Wolffia::Container]
   attr_writer :container
 
-  def initialize(path: nil)
-    Wolffia::Concurrent.call
-
-    self.path = path
-    self.container = self.container
-  end
-
   # @return [Wolffia::Container]
   def container
     @container ||= lambda do
@@ -105,6 +98,13 @@ class Wolffia
   end
 
   protected
+
+  def initialize(path: nil)
+    Wolffia::Concurrent.call
+
+    self.path = path
+    self.container = self.container
+  end
 
   def path=(path)
     Pathname.new(path).yield_self { |fp| fp.directory? ? fp : fp.dirname }.realpath.freeze.tap do |dir|
