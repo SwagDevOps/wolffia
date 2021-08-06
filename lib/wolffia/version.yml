@@ -1,0 +1,21 @@
+---
+major: 2
+minor: 0
+patch: 0
+authors: ['Dimitri Arrigoni']
+email: 'dimitri@arrigoni.me'
+date: '2020-07-01'
+# MUST follow the higher required_ruby_version
+# requires version >= 2.3.0 due to safe navigation operator &
+# requires version >= 2.5.0 due to Lint/Syntax: unexpected token kRESCUE
+required_ruby_version: '>= 2.5.0'
+summary: 'lightweight web framework'
+description: 'A simple lightweight web framework'
+homepage: 'https://github.com/SwagDevOps/wolffia'
+licenses: ['GPL-3.0']
+license_header: |
+  Copyright (C) 2019-2021 Dimitri Arrigoni <dimitri@arrigoni.me>
+  License GPLv3+: GNU GPL version 3 or later
+  <http://www.gnu.org/licenses/gpl.html>.
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
