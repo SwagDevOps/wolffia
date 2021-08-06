@@ -1,0 +1,189 @@
+GIT
+  remote: https://github.com/SwagDevOps/kamaze-project.git
+  revision: 83dc8cfd8edbf853b7a2635afb5c928a1e197782
+  branch: develop
+  specs:
+    kamaze-project (1.1.0)
+      cli-ui (~> 1.3)
+      cliver (~> 0.3)
+      dotenv (~> 2.7)
+      dry-inflector (~> 0.1)
+      kamaze-version (~> 1.0)
+      process_lock (~> 0.1)
+      tenjin (~> 0.7)
+      tty-editor (~> 0.5)
+      tty-screen (~> 0.7, >= 0.6.2)
+
+GIT
+  remote: https://github.com/alexch/rerun.git
+  revision: a95b61eb1e5ac4fa9706d46dad10798c33eda59f
+  branch: master
+  specs:
+    rerun (0.13.1)
+      listen (~> 3.0)
+
+GIT
+  remote: https://github.com/ksylvest/rhino.git
+  revision: 2922bc7e0653602825eeaeab87f984cca04e7e1a
+  branch: master
+  specs:
+    rhino (0.1.1)
+      rack
+      slop
+
+GIT
+  remote: https://github.com/sqm/http_router.git
+  revision: 768039de38c458b5ff59f1b9122ce7dbeb11856b
+  branch: master
+  specs:
+    http_router (0.11.2)
+      rack (>= 1.0.0)
+      url_mount (~> 0.2.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    better_errors (2.9.1)
+      coderay (>= 1.0.0)
+      erubi (>= 1.0.0)
+      rack (>= 0.9.0)
+    binding_of_caller (1.0.0)
+      debug_inspector (>= 0.0.1)
+    cli-ui (1.5.1)
+    cliver (0.3.2)
+    coderay (1.1.3)
+    concurrent-ruby (1.1.9)
+    debug_inspector (1.1.0)
+    diff-lcs (1.4.4)
+    dotenv (2.7.6)
+    dry-auto_inject (0.8.0)
+      dry-container (>= 0.3.4)
+    dry-configurable (0.12.1)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 0.5, >= 0.5.0)
+    dry-container (0.8.0)
+      concurrent-ruby (~> 1.0)
+      dry-configurable (~> 0.1, >= 0.1.3)
+    dry-core (0.7.1)
+      concurrent-ruby (~> 1.0)
+    dry-inflector (0.2.1)
+    erubi (1.10.0)
+    ffi (1.15.3)
+    github-markup (3.0.5)
+    hanami-router (1.3.2)
+      hanami-utils (~> 1.3)
+      http_router (= 0.11.2)
+      rack (~> 2.0)
+    hanami-utils (1.3.8)
+      concurrent-ruby (~> 1.0)
+      transproc (~> 1.0)
+    interesting_methods (0.1.2)
+    kamaze-version (1.0.2)
+      dry-inflector (~> 0.1)
+    listen (3.6.0)
+      rb-fsevent (~> 0.10, >= 0.10.3)
+      rb-inotify (~> 0.9, >= 0.9.10)
+    method_source (1.0.0)
+    parallel (1.20.1)
+    parser (3.0.2.0)
+      ast (~> 2.4.1)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    process_lock (0.1.2)
+    pry (0.14.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    rack (2.2.3)
+    rainbow (3.0.0)
+    rake (13.0.6)
+    rb-fsevent (0.11.0)
+    rb-inotify (0.10.1)
+      ffi (~> 1.0)
+    redcarpet (3.5.1)
+    regexp_parser (2.1.1)
+    rexml (3.2.5)
+    rspec (3.10.0)
+      rspec-core (~> 3.10.0)
+      rspec-expectations (~> 3.10.0)
+      rspec-mocks (~> 3.10.0)
+    rspec-core (3.10.1)
+      rspec-support (~> 3.10.0)
+    rspec-expectations (3.10.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.10.0)
+    rspec-mocks (3.10.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.10.0)
+    rspec-support (3.10.2)
+    rubocop (1.18.4)
+      parallel (~> 1.10)
+      parser (>= 3.0.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml
+      rubocop-ast (>= 1.8.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.8.0)
+      parser (>= 3.0.1.1)
+    ruby-progressbar (1.11.0)
+    rugged (1.1.1)
+    slop (4.9.1)
+    stibium-bundled (0.0.6)
+    sys-proc (1.1.2)
+      dry-inflector (~> 0.1)
+    tenjin (0.7.1)
+    transproc (1.1.1)
+    tty-color (0.6.0)
+    tty-cursor (0.7.1)
+    tty-editor (0.7.0)
+      tty-prompt (~> 0.22)
+    tty-prompt (0.23.1)
+      pastel (~> 0.8)
+      tty-reader (~> 0.8)
+    tty-reader (0.9.0)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.8)
+      wisper (~> 2.0)
+    tty-screen (0.8.1)
+    unicode-display_width (2.0.0)
+    url_mount (0.2.1)
+      rack
+    wisper (2.0.1)
+    yard (0.9.26)
+    yard-coderay (0.1.0)
+      coderay
+      yard
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  better_errors (~> 2.9.1)
+  binding_of_caller (~> 1.0.0)
+  dry-auto_inject (~> 0.8.0)
+  dry-container (~> 0.8.0)
+  github-markup (~> 3.0)
+  hanami-router (~> 1.3.2)
+  http_router!
+  interesting_methods (~> 0.1)
+  kamaze-project!
+  kamaze-version (~> 1.0)
+  listen (~> 3.1)
+  pry (~> 0.12)
+  rake (~> 13.0)
+  redcarpet (~> 3.5)
+  rerun!
+  rhino!
+  rspec (~> 3.8)
+  rubocop (~> 1.3)
+  rugged (~> 1.0)
+  stibium-bundled (~> 0.0.1, >= 0.0.4)
+  sys-proc (~> 1.1)
+  yard (~> 0.9)
+  yard-coderay (~> 0.1)
+
+BUNDLED WITH
+   2.2.2
