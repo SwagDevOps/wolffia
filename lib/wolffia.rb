@@ -14,6 +14,7 @@ class Wolffia
 
   {
     Bundleable: 'bundleable',
+    Concurrent: 'concurrent',
     Container: 'container',
     HTTP: 'http',
     Mixins: 'mixins',
@@ -29,6 +30,8 @@ class Wolffia
   attr_writer :container
 
   def initialize(path: nil)
+    Wolffia::Concurrent.call
+
     self.path = path
     self.container = self.container
   end
