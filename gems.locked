@@ -167,6 +167,7 @@ DEPENDENCIES
   binding_of_caller (~> 1.0.0)
   concurrent-ruby (~> 1.1.9)
   concurrent-ruby-ext (~> 1.1.9)
+  dotenv (~> 2.7.6)
   dry-auto_inject (~> 0.8.0)
   dry-container (~> 0.8.0)
   github-markup (~> 3.0)
