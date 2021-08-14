@@ -16,6 +16,7 @@ end
 
 group :default do
   gem 'concurrent-ruby', '~> 1.1.9'
+  gem 'config', '~> 3.1.0'
   gem 'dotenv', '~> 2.7.6'
   gem 'dry-auto_inject', '~> 0.8.0'
   gem 'dry-container', '~> 0.8.0'
