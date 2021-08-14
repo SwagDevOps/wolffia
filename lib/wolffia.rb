@@ -33,7 +33,7 @@ class Wolffia
   attr_reader :path
 
   # @return [Wolffia::Container]
-  attr_writer :container
+  attr_reader :container
 
   # @return [Wolffia::Container]
   def container
@@ -104,18 +104,34 @@ class Wolffia
 
   protected
 
+  # @type [Wolffia::Container]
+  attr_writer :container
+
+  # @retun [Hash]
+  attr_accessor :env_loaded
+
   def initialize(path: nil)
     Wolffia::Concurrent.call
 
     self.path = path
     self.container = self.container
+    self.env_loaded = dotenv
 
-    Kernel.__send__(:define_method, :__app__) { self }
+    self.tap do |instance|
+      Kernel.__send__(:define_method, :__app__) { instance }
+    end
   end
 
   def path=(path)
     Pathname.new(path).yield_self { |fp| fp.directory? ? fp : fp.dirname }.realpath.freeze.tap do |dir|
       @path = dir
+    end
+  end
+
+  # @return [Hash]
+  def dotenv
+    self.path.join('.env').to_path.yield_self do |fp|
+      Dotenv.load(fp)
     end
   end
 end
