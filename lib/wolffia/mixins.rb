@@ -11,6 +11,7 @@ require_relative '../wolffia'
 # Module namesapce
 module Wolffia::Mixins
   {
+    Env: 'env',
     Injectable: 'injectable',
   }.each { |s, fp| autoload(s, "#{__dir__}/mixins/#{fp}") }
 end
