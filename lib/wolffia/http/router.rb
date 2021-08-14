@@ -46,13 +46,14 @@ class Wolffia::HTTP::Router < Hanami::Router
   # @return [Wolffia::Container::Injector]
   attr_reader :injector
 
-  attr_accessor :controllers
+  def controllers
+    @controllers ||= Concurrent::Hash.new
+  end
 
   def injector=(injector)
     (@injector = injector).tap do
-      @controllers ||= {}
       self.controllers.to_h.each_key do |klass|
-        @controllers[klass] = self.instance_for(klass)
+        self.controllers[klass] = self.instance_for(klass)
       end
     end
   end
@@ -63,8 +64,7 @@ class Wolffia::HTTP::Router < Hanami::Router
   #
   # @return [Wolffia::HTTP::Controller]
   def instance_for(controller)
-    @controllers ||= {}
-    @controllers[controller] ||= controller.tap { |c| c.__send__(:injector=, injector) }.new.tap do |instance|
+    self.controllers[controller] ||= controller.tap { |c| c.__send__(:injector=, injector) }.new.tap do |instance|
       instance.actions.yield_self do |actions|
         instance.singleton_class.__send__(:define_method, :actions) { actions.transform_keys(&:to_sym) }
       end
@@ -72,6 +72,7 @@ class Wolffia::HTTP::Router < Hanami::Router
   end
 
   # @param [Proc] action
+  # @param [Class<Wolffia::HTTP::Controller>] controller
   # @param [Hash{String => Object}] env
   #
   # @return [Array]

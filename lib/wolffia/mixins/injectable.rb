@@ -37,10 +37,17 @@ module Wolffia::Mixins::Injectable
 
     protected
 
+    # @!method __app__
+    #   @api private
+    #   @see Wolffia.call
+    #   @return [Wolffia]
+
     attr_reader :injectables
 
     def injector
-      @injector || Wolffia.injector
+      (@injector || __app__.injector).tap do |v|
+        raise RuntimeError, 'can not retrieve injector' unless v
+      end
     end
 
     def injector=(injector)

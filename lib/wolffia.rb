@@ -8,7 +8,13 @@
 
 $LOAD_PATH.unshift(__dir__)
 
-# Entrypoint
+# App class, acts as a singleton.
+#
+# Sample of use:
+#
+# ```ruby
+# App = Class.new(Wolffia).call
+# ```
 class Wolffia
   autoload(:Pathname, 'pathname')
 
@@ -41,6 +47,11 @@ class Wolffia
     end.call
   end
 
+  # @return [Wolffia::Container::Injector, nil]
+  def injector
+    @container&.injector
+  end
+
   # Resolve an item from the container
   #
   # @param [Mixed] key
@@ -69,23 +80,17 @@ class Wolffia
     # @return [Wolffia]
     def call(path: nil, &block)
       (path || caller_locations.first.path).yield_self do |fp|
-        synchronize { @instance ||= self.new(path: fp) }
-        block&.call(@instance)
-
-        return @instance
+        synchronize do
+          (@instance ||= self.new(path: fp)).tap do |app|
+            block&.call(app)
+          end
+        end
       end
     end
 
     # @return [Wolffia]
     def instance
-      caller_locations.first.path.yield_self do |path|
-        synchronize { @instance ||= self.new(path: path) }
-      end
-    end
-
-    # @return [Wolffia::Container::Injector, nil]
-    def injector
-      instance ? instance.container.injector : nil
+      caller_locations.first.path.yield_self { |path| self.call(path: path) }
     end
 
     protected :new
@@ -104,6 +109,8 @@ class Wolffia
 
     self.path = path
     self.container = self.container
+
+    Kernel.__send__(:define_method, :__app__) { self }
   end
 
   def path=(path)
