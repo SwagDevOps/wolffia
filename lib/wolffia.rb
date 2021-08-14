@@ -22,6 +22,7 @@ class Wolffia
     Bundleable: 'bundleable',
     Concurrent: 'concurrent',
     Container: 'container',
+    Dotenv: 'dotenv',
     HTTP: 'http',
     Mixins: 'mixins',
     VERSION: 'version',
@@ -34,18 +35,6 @@ class Wolffia
 
   # @return [Wolffia::Container]
   attr_reader :container
-
-  # @return [Wolffia::Container]
-  def container
-    @container ||= lambda do
-      Wolffia::Container.new.tap do |c|
-        c.register(:base_dir, self.path)
-        c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.path.join('routes/web.rb')) }
-        c.load_file(self.path.join('container/services.rb'))
-        c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
-      end
-    end.call
-  end
 
   # @return [Wolffia::Container::Injector, nil]
   def injector
@@ -107,18 +96,20 @@ class Wolffia
   # @type [Wolffia::Container]
   attr_writer :container
 
-  # @retun [Hash]
-  attr_accessor :env_loaded
+  # Keep track of dotenv results.
+  #
+  # @retun [Concurrent::Array<Hash{String => String}>]
+  attr_accessor :envs
 
   def initialize(path: nil)
     Wolffia::Concurrent.call
 
-    self.path = path
-    self.container = self.container
-    self.env_loaded = dotenv
+    self.envs = ::Concurrent::Array.new
+    (self.path = path).tap { dotenv}
+    self.container = self.make_container
 
-    self.tap do |instance|
-      Kernel.__send__(:define_method, :__app__) { instance }
+    self.tap do |app|
+      Kernel.__send__(:define_method, :__app__) { app }
     end
   end
 
@@ -130,8 +121,18 @@ class Wolffia
 
   # @return [Hash]
   def dotenv
-    self.path.join('.env').to_path.yield_self do |fp|
-      Dotenv.load(fp)
+    Wolffia::Dotenv.new(path: self.path).call.tap do |env|
+      self.envs.push(env)
     end
+  end
+
+  # @return [Wolffia::Container]
+  def make_container
+      Wolffia::Container.new.tap do |c|
+        c.register(:base_dir, self.path)
+        c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.path.join('routes/web.rb')) }
+        c.load_file(self.path.join('container/services.rb'))
+        c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
+      end
   end
 end
