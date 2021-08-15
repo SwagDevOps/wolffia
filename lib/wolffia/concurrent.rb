@@ -15,8 +15,28 @@ require_relative '../wolffia'
 module Wolffia::Concurrent
   class << self
     def call(name = nil)
+      constants_from(self) { |cname| self.remove_const(cname) }
+
       # noinspection RubyResolve
-      require ['concurrent', name].compact.join('/')
+      (require ['concurrent', name].compact.join('/')).tap do
+        constants_from(::Concurrent) do |cname|
+          self.const_set(cname, ::Concurrent.const_get(cname))
+        end
+      end
+    end
+
+    protected
+
+    # @param [Class, Module] source
+    # @yield [Symbol]
+    #
+    # @return [Array<Symbol>]
+    def constants_from(source, &block)
+      source.constants.map(&:to_sym).tap do |name|
+        if block
+          name.each { |v| block.call(v) }
+        end
+      end
     end
   end
 end
