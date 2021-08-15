@@ -26,19 +26,25 @@ Gem::Specification.new do |s|
     "lib/wolffia.rb",
     "lib/wolffia/bundleable.rb",
     "lib/wolffia/concurrent.rb",
+    "lib/wolffia/config.rb",
     "lib/wolffia/container.rb",
+    "lib/wolffia/container/builder.rb",
     "lib/wolffia/container/injector.rb",
+    "lib/wolffia/dotenv.rb",
     "lib/wolffia/http.rb",
     "lib/wolffia/http/controller.rb",
     "lib/wolffia/http/response.rb",
     "lib/wolffia/http/router.rb",
     "lib/wolffia/mixins.rb",
+    "lib/wolffia/mixins/env.rb",
     "lib/wolffia/mixins/injectable.rb",
     "lib/wolffia/version.rb",
     "lib/wolffia/version.yml",
   ]
 
   s.add_runtime_dependency("concurrent-ruby", ["~> 1.1.9"])
+  s.add_runtime_dependency("config", ["~> 3.1.0"])
+  s.add_runtime_dependency("dotenv", ["~> 2.7.6"])
   s.add_runtime_dependency("dry-auto_inject", ["~> 0.8.0"])
   s.add_runtime_dependency("dry-container", ["~> 0.8.0"])
   s.add_runtime_dependency("hanami-router", ["~> 1.3.2"])
