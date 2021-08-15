@@ -32,34 +32,13 @@ class Wolffia
   include(Bundleable)
   include(Wolffia::Mixins::Env)
 
-  # @return [Pathname]
-  attr_reader :path
-
-  # @return [Wolffia::Container]
-  attr_reader :container
-
   def environment
-    env('APP_ENV', 'development')
+    container&.resolve(:'app.environment')
   end
 
   # @return [Wolffia::Container::Injector, nil]
   def injector
     @container&.injector
-  end
-
-  # Resolve an item from the container
-  #
-  # @param [Mixed] key
-  #   The key for the item you wish to resolve
-  # @yield
-  #   Fallback block to call when a key is missing. Its result will be returned
-  # @yieldparam [Mixed] key Missing key
-  #
-  # @return [Mixed]
-  #
-  # @api public
-  def resolve(key, &block)
-    container.resolve(key, &block)
   end
 
   # @param [Rack::Builder] builder
@@ -99,24 +78,34 @@ class Wolffia
 
   protected
 
-  # @type [Wolffia::Container]
-  attr_writer :container
+  # @return [Pathname]
+  attr_reader :path
+
+  # @return [Wolffia::Container]
+  attr_accessor :container
 
   def initialize(path: nil)
     Wolffia::Concurrent.call
 
     self.path = path
-    self.container = dotenv.yield_self { self.make_container }
+    self.container = dotenv.yield_self { Wolffia::Container.build(self.path) }
 
     self.register.freeze
   end
 
+  # Set base path for application
+  #
+  # @param [String, Pathname] path
+  #
+  # @return [Pathname]
   def path=(path)
     Pathname.new(path).yield_self { |fp| fp.directory? ? fp : fp.dirname }.realpath.freeze.tap do |dir|
       @path = dir
     end
   end
 
+  # Load dotenv file.
+  #
   # @return [Hash]
   def dotenv
     Wolffia::Dotenv.new(path: self.path).call
@@ -127,23 +116,22 @@ class Wolffia
   # @return [self]
   def register(method_name = :__app__)
     self.tap do |app|
-      unless Kernel.respond_to?(method_name)
-        Kernel.__send__(:define_method, method_name) { app }
-      end
+      Kernel.__send__(:define_method, method_name) { app }
     end
   end
 
-  # rubocop:disable Metrics/AbcSize
-
-  # @return [Wolffia::Container]
-  def make_container
-    Wolffia::Container.new.tap do |c|
-      c[:base_dir] = self.path
-      c[:settings] = Config.new(self.path, self.environment).settings
-      c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.path.join('routes/web.rb')) }
-      c.load_file(self.path.join('container/services.rb'))
-      c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
-    end
+  # Resolve an item from the container
+  #
+  # @param [Mixed] key
+  #   The key for the item you wish to resolve
+  # @yield
+  #   Fallback block to call when a key is missing. Its result will be returned
+  # @yieldparam [Mixed] key Missing key
+  #
+  # @return [Mixed]
+  #
+  # @api public
+  def resolve(key, &block)
+    container.resolve(key, &block)
   end
-  # rubocop:enable Metrics/AbcSize
 end
