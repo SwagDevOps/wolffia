@@ -21,6 +21,7 @@ class Wolffia
   {
     Bundleable: 'bundleable',
     Concurrent: 'concurrent',
+    Config: 'config',
     Container: 'container',
     Dotenv: 'dotenv',
     HTTP: 'http',
@@ -29,12 +30,17 @@ class Wolffia
   }.each { |s, fp| autoload(s, "#{__dir__}/wolffia/#{fp}") }
 
   include(Bundleable)
+  include(Wolffia::Mixins::Env)
 
   # @return [Pathname]
   attr_reader :path
 
   # @return [Wolffia::Container]
   attr_reader :container
+
+  def environment
+    env('APP_ENV', 'development')
+  end
 
   # @return [Wolffia::Container::Injector, nil]
   def injector
@@ -96,21 +102,13 @@ class Wolffia
   # @type [Wolffia::Container]
   attr_writer :container
 
-  # Keep track of dotenv results.
-  #
-  # @retun [Concurrent::Array<Hash{String => String}>]
-  attr_accessor :envs
-
   def initialize(path: nil)
     Wolffia::Concurrent.call
 
-    self.envs = ::Concurrent::Array.new
-    (self.path = path).tap { dotenv}
-    self.container = self.make_container
+    self.path = path
+    self.container = dotenv.yield_self { self.make_container }
 
-    self.tap do |app|
-      Kernel.__send__(:define_method, :__app__) { app }
-    end
+    self.register.freeze
   end
 
   def path=(path)
@@ -121,18 +119,31 @@ class Wolffia
 
   # @return [Hash]
   def dotenv
-    Wolffia::Dotenv.new(path: self.path).call.tap do |env|
-      self.envs.push(env)
+    Wolffia::Dotenv.new(path: self.path).call
+  end
+
+  # Register ``__app__`` helper method
+  #
+  # @return [self]
+  def register(method_name = :__app__)
+    self.tap do |app|
+      unless Kernel.respond_to?(method_name)
+        Kernel.__send__(:define_method, method_name) { app }
+      end
     end
   end
 
+  # rubocop:disable Metrics/AbcSize
+
   # @return [Wolffia::Container]
   def make_container
-      Wolffia::Container.new.tap do |c|
-        c.register(:base_dir, self.path)
-        c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.path.join('routes/web.rb')) }
-        c.load_file(self.path.join('container/services.rb'))
-        c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
-      end
+    Wolffia::Container.new.tap do |c|
+      c[:base_dir] = self.path
+      c[:settings] = Config.new(self.path, self.environment).settings
+      c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.path.join('routes/web.rb')) }
+      c.load_file(self.path.join('container/services.rb'))
+      c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
+    end
   end
+  # rubocop:enable Metrics/AbcSize
 end
