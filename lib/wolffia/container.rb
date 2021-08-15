@@ -16,8 +16,18 @@ class Wolffia::Container < Dry::Container
   autoload(:Pathname, 'pathname')
 
   {
+    Builder: 'builder',
     Injector: 'injector',
   }.each { |s, fp| autoload(s, "#{__dir__}/container/#{fp}") }
+
+  class << self
+    # @see Wolffia::Container::Builder#initialize
+    #
+    # @return [Wolffia::Container]
+    def build(...)
+      Builder.call(...)
+    end
+  end
 
   # @return [Wolffia::Container::Injector]
   def injector
