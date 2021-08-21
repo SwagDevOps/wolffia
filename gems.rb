@@ -15,6 +15,7 @@ def github(repo, options = {}, &block)
 end
 
 group :default do
+  gem 'autoloaded', '~> 2'
   gem 'concurrent-ruby', '~> 1.1.9'
   gem 'config', '~> 3.1.0'
   gem 'dotenv', '~> 2.7.6'
