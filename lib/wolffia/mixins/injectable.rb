@@ -12,6 +12,9 @@ require_relative '../mixins'
 #
 # @see https://dry-rb.org/gems/dry-auto_inject/0.6/basic-usage/
 module Wolffia::Mixins::Injectable
+  # @api private
+  MISSING_INJECTOR_ERROR = ::Wolffia::Errors::Core::MissingInjectorError
+
   def self.included(klass)
     klass.extend(ClassMethods)
   end
@@ -24,38 +27,43 @@ module Wolffia::Mixins::Injectable
 
     # @see https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     def new(...)
-      allocate
-
-      super(...)
+      include_injector.yield_self { super(...) }
     end
 
-    def allocate
-      __send__(:include, injector[*injectables]) if !injectables.to_a.empty? and injector
-
+    def allocate(...)
+      include_injector
+    rescue MISSING_INJECTOR_ERROR # app is not started
+      super
+    ensure
       super
     end
 
     protected
 
-    # @!method __app__
-    #   @api private
-    #   @see Wolffia.call
-    #   @return [Wolffia]
-
     attr_reader :injectables
 
+    # @return [Wolffia::Injector]
     def injector
-      (@injector || __app__.injector).tap do |v|
-        raise RuntimeError, 'can not retrieve injector' unless v
+      # @type [Wolffia, nil] app
+      (Kernel.respond_to?(:__app__) ? Kernel.__app__ : nil).yield_self do |app|
+        (@injector || app&.injector).tap do |v|
+          raise MISSING_INJECTOR_ERROR, 'can not retrieve injector' if v.nil?
+        end
       end
     end
 
+    # @param
     def injector=(injector)
-      -> { injector }.tap do |f|
-        @injector = f.call
+      (@injector = injector).tap { include_injector }
+    end
 
-        self.allocate
-      end.call
+    # @api private
+    #
+    # @param [Wolffia::Injector] injector
+    #
+    # @return [Wolffia::Injector]
+    def include_injector(injector = self.injector)
+      __send__(:include, injector[*injectables]) unless injectables.to_a.empty?
     end
   end
 end
