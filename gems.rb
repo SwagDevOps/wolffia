@@ -39,7 +39,8 @@ group :development do
   # web ----------------------------------
   gem 'better_errors', '~> 2.9.1'
   gem 'binding_of_caller', '~> 1.0.0'
-  gem 'concurrent-ruby-ext', '~> 1.1.9'
+  gem 'thin', '~> 1.8'
+  gem 'webrick', '~> 1.6'
   github 'ksylvest/rhino', { branch: 'master' }
   github 'alexch/rerun', { branch: 'master' }
   github 'sqm/http_router', { branch: 'master' }
