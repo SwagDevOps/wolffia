@@ -12,18 +12,43 @@ require 'hanami/router'
 # HTTP router
 class Wolffia::HTTP::Router < Hanami::Router
   autoload(:Pathname, 'pathname')
+  include(Wolffia::Autoloaded).autoloaded(self.binding)
+  include Wolffia::HTTP::Router::HasHandler
 
-  # @return [Proc]
-  def handler
-    lambda do |klass, method|
-      lambda do |env|
-        instance_for(klass).yield_self do |controller|
-          controller.actions.fetch(method.to_sym).yield_self do |action|
-            respond_with(action, env: env, controller: controller)
-          end
-        end
-      end
-    end
+  def get(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def post(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def put(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def patch(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def delete(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def trace(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def options(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
+  end
+
+  def root(options = {}, &blk)
+    super(optionize(options), &blk)
+  end
+
+  def redirect(path, options = {}, &blk)
+    super(path, handleable(options), &blk)
   end
 
   # Load routes from given file.
@@ -64,26 +89,11 @@ class Wolffia::HTTP::Router < Hanami::Router
   #
   # @return [Wolffia::HTTP::Controller]
   def instance_for(controller)
+    # @type [Wolffia::HTTP::Controller] instance
     self.controllers[controller] ||= controller.tap { |c| c.__send__(:injector=, injector) }.new.tap do |instance|
       instance.actions.yield_self do |actions|
+        # Ensure actions are indexed by symbols
         instance.singleton_class.__send__(:define_method, :actions) { actions.transform_keys(&:to_sym) }
-      end
-    end
-  end
-
-  # @param [Proc] action
-  # @param [Class<Wolffia::HTTP::Controller>] controller
-  # @param [Hash{String => Object}] env
-  #
-  # @return [Array]
-  def respond_with(action, controller: nil, env: {})
-    action.call(env).to_a.yield_self do |response|
-      response.yield_self do |status, headers, body|
-        [
-          status,
-          (controller&.headers || {}).merge(headers).transform_keys(&:to_s),
-          body,
-        ]
       end
     end
   end
