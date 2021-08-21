@@ -18,16 +18,17 @@ $LOAD_PATH.unshift(__dir__)
 class Wolffia
   autoload(:Pathname, 'pathname')
 
-  {
-    Bundleable: 'bundleable',
-    Concurrent: 'concurrent',
-    Config: 'config',
-    Container: 'container',
-    Dotenv: 'dotenv',
-    HTTP: 'http',
-    Mixins: 'mixins',
-    VERSION: 'version',
-  }.each { |s, fp| autoload(s, "#{__dir__}/wolffia/#{fp}") }
+  begin
+    require_relative './wolffia/autoloaded'
+    include(Wolffia::Autoloaded)
+  end.autoloaded do |autoloading|
+    autoloading.except(:Autoloaded)
+
+    {
+      HTTP: 'http',
+      VERSION: 'version',
+    }.tap { |kwargs| autoloading.with(**kwargs.invert) }
+  end
 
   include(Bundleable)
   include(Wolffia::Mixins::Env)
