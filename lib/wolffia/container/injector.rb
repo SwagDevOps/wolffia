@@ -18,6 +18,10 @@ class Wolffia::Container::Injector < Dry::AutoInject::Builder
     self.instance_eval('class << self; self end', __FILE__, __LINE__).superclass
   end
 
+  def nil?
+    false
+  end
+
   def tap
     yield(self)
     self
