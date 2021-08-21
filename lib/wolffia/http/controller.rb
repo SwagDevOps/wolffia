@@ -21,6 +21,28 @@ class Wolffia::HTTP::Controller
     {}
   end
 
+  class << self
+    # Get params for router handler.
+    #
+    # @api private
+    #
+    # @param [String, Symbol] key
+    #
+    # @return [Array<Class, Symbol>, nil]
+    def [](key)
+      instance_actions.include?(key.to_sym) ? [self, key.to_sym] : nil
+    end
+
+    # Get list of available actions on controller instance.
+    #
+    # @api private
+    #
+    # @return [Hash{Symbol => Proc}]
+    def instance_actions
+      self.allocate.actions.transform_keys(&:to_sym).keys
+    end
+  end
+
   protected
 
   def response(body, status: 200, headers: {})
