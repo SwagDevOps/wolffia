@@ -10,7 +10,5 @@ require_relative '../errors'
 
 # Namespace module
 module Wolffia::Errors::Core
-  # rubocop:disable Lint/EmptyBlock
-  include(Wolffia::Autoloaded).autoloaded {}
-  # rubocop:enable Lint/EmptyBlock
+  include(Wolffia::Autoloaded).autoloaded(self.binding)
 end

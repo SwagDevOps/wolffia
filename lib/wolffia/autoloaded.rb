@@ -10,26 +10,35 @@ require_relative '../wolffia'
 
 # @see https://njonsson.github.io/autoloaded/
 module Wolffia::Autoloaded
-  def self.included(klass)
-    klass.extend(ClassMethods)
-
-    lambda do |&block|
-      klass.__send__(:autoloaded, &block)
-    end
-  end
-
   # Class-methods
   module ClassMethods
-    autoload(:Pathname, 'pathname')
     autoload(:Autoloaded, 'autoloaded')
 
     protected
 
+    # Autoloads constants that match files in the source directory.
+    #
+    # @param [Binding] binding
+    #
     # @yield [autoloadeding]
     #
     # @yieldreturn [Autoloaded::Autoloader]
-    def autoloaded(&block)
+    def autoloaded(binding = nil, &block)
+      block ||= lambda do
+        return nil unless binding
+
+        (->(*) {}).tap do |functor|
+          functor.singleton_class.__send__(:define_method, :binding) { binding }
+        end
+      end.call
+
       Autoloaded.module(&block)
+    end
+  end
+
+  class << self
+    def included(klass)
+      klass.extend(ClassMethods)
     end
   end
 end
