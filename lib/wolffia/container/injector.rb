@@ -27,6 +27,12 @@ class Wolffia::Container::Injector < Dry::AutoInject::Builder
     self
   end
 
+  def yield_self
+    yield(self)
+  end
+
+  alias then yield_self
+
   def object_id
     __id__
   end
