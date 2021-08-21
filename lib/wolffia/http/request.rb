@@ -6,14 +6,12 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../wolffia'
+require_relative '../http'
+require 'rack/request'
 
-# Module namesapce
-module Wolffia::HTTP
-  {
-    Controller: 'controller',
-    Request: 'request',
-    Response: 'response',
-    Router: 'router',
-  }.each { |s, fp| autoload(s, "#{__dir__}/http/#{fp}") }
+# Describe an HTTP request
+class Wolffia::HTTP::Request < Rack::Request
+  def to_h
+    @env.freeze
+  end
 end
