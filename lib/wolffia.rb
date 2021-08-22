@@ -19,18 +19,20 @@ class Wolffia
   autoload(:Pathname, 'pathname')
 
   begin
-    require_relative './wolffia/autoloaded'
-    include(Wolffia::Autoloaded)
+    # noinspection RubyResolve
+    [:bundleable, :autoloaded,].map { |s| require_relative("./wolffia/#{s}") }.then do
+      include(::Wolffia::Bundleable)
+      include(::Wolffia::Autoloaded)
+    end
   end.autoloaded do |autoloading|
-    autoloading.except(:Autoloaded)
+    autoloading.except(:Autoloaded, :Bundleable, :VERSION)
+    autoload(:VERSION, "#{__dir__}/wolffia/version")
 
     {
       HTTP: 'http',
-      VERSION: 'version',
     }.tap { |kwargs| autoloading.with(**kwargs.invert) }
   end
 
-  include(Bundleable)
   include(Wolffia::Mixins::Env)
 
   def environment
