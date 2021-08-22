@@ -10,10 +10,5 @@ require_relative '../wolffia'
 
 # Module namesapce
 module Wolffia::HTTP
-  {
-    Controller: 'controller',
-    Request: 'request',
-    Response: 'response',
-    Router: 'router',
-  }.each { |s, fp| autoload(s, "#{__dir__}/http/#{fp}") }
+  include(Wolffia::Autoloaded).autoloaded(self.binding)
 end
