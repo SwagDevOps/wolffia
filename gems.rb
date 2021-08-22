@@ -15,15 +15,16 @@ def github(repo, options = {}, &block)
 end
 
 group :default do
-  gem 'autoloaded', '~> 2'
-  gem 'concurrent-ruby', '~> 1.1.9'
-  gem 'config', '~> 3.1.0'
-  gem 'dotenv', '~> 2.7.6'
-  gem 'dry-auto_inject', '~> 0.8.0'
-  gem 'dry-container', '~> 0.8.0'
-  gem 'hanami-router', '~> 1.3.2'
+  gem 'autoloaded', '~> 2.3'
+  gem 'concurrent-ruby', '~> 1.1'
+  gem 'config', '~> 3.1'
+  gem 'deep_dup', '~> 0.0'
+  gem 'dotenv', '~> 2.7'
+  gem 'dry-auto_inject', '~> 0.8'
+  gem 'dry-container', '~> 0.8'
+  gem 'hanami-router', '~> 1.3'
   gem 'kamaze-version', '~> 1.0'
-  gem 'stibium-bundled', '~> 0.0.1', '>= 0.0.4'
+  gem 'stibium-bundled', '~> 0.0', '>= 0.0.4'
   gem 'sys-proc', '~> 1.1'
 end
 
@@ -37,8 +38,8 @@ group :development do
   gem 'interesting_methods', '~> 0.1'
   gem 'pry', '~> 0.12'
   # web ----------------------------------
-  gem 'better_errors', '~> 2.9.1'
-  gem 'binding_of_caller', '~> 1.0.0'
+  gem 'better_errors', '~> 2.9'
+  gem 'binding_of_caller', '~> 1.0'
   gem 'thin', '~> 1.8'
   gem 'webrick', '~> 1.6'
   github 'ksylvest/rhino', { branch: 'master' }
