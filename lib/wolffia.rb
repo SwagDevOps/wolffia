@@ -18,19 +18,21 @@ $LOAD_PATH.unshift(__dir__)
 class Wolffia
   autoload(:Pathname, 'pathname')
 
-  begin
-    # noinspection RubyResolve
-    [:bundleable, :autoloaded,].map { |s| require_relative("./wolffia/#{s}") }.then do
-      include(::Wolffia::Bundleable)
-      include(::Wolffia::Autoloaded)
-    end
-  end.autoloaded do |autoloading|
-    autoloading.except(:Autoloaded, :Bundleable, :VERSION)
-    autoload(:VERSION, "#{__dir__}/wolffia/version")
+  "#{__dir__}/wolffia".yield_self do |path|
+    self.tap do
+      # noinspection RubyResolve
+      [:bundleable, :autoloaded].map { |s| require("#{path}/#{s}") }.then do
+        include(::Wolffia::Bundleable)
+        include(::Wolffia::Autoloaded)
+        autoload(:VERSION, "#{path}/version")
+      end
+    end.autoloaded do |autoloading|
+      autoloading.except(:Autoloaded, :Bundleable, :VERSION)
 
-    {
-      HTTP: 'http',
-    }.tap { |kwargs| autoloading.with(**kwargs.invert) }
+      {
+        HTTP: 'http',
+      }.tap { |kwargs| autoloading.with(**kwargs.invert) }
+    end
   end
 
   include(Wolffia::Mixins::Env)
@@ -75,7 +77,7 @@ class Wolffia
     protected
 
     def synchronize(&block)
-      (@mutex ||= Mutex.new).synchronize { block.call }
+      (@mutex ||= ::Mutex.new).synchronize { block.call }
     end
   end
 
@@ -88,10 +90,10 @@ class Wolffia
   attr_accessor :container
 
   def initialize(path: nil)
-    Wolffia::Concurrent.call
+    Concurrent.call
 
     self.path = path
-    self.container = dotenv.yield_self { Wolffia::Container.build(self.path) }
+    self.container = dotenv.yield_self { Container.build(self.path) }
 
     self.register.freeze
   end
@@ -111,7 +113,7 @@ class Wolffia
   #
   # @return [Hash]
   def dotenv
-    Wolffia::Dotenv.new(path: self.path).call
+    Dotenv.new(path: self.path).call
   end
 
   # Register ``__app__`` helper method
@@ -119,7 +121,7 @@ class Wolffia
   # @return [self]
   def register(method_name = :__app__)
     self.tap do |app|
-      Kernel.__send__(:define_method, method_name) { app }
+      ::Kernel.__send__(:define_method, method_name) { app }
     end
   end
 
