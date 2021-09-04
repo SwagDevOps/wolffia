@@ -10,7 +10,7 @@ require_relative '../http'
 
 # @abstract
 class Wolffia::HTTP::Controller
-  include Wolffia::Mixins::Injectable
+  include ::Wolffia::Mixins::Injectable
 
   # @return [Hash{Symbol => Proc}]
   def actions
