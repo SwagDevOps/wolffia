@@ -33,9 +33,9 @@ module Wolffia::Concurrent
     # @return [Array<Symbol>]
     def constants_from(source, &block)
       source.constants.map(&:to_sym).tap do |name|
-        if block
-          name.each { |v| block.call(v) }
-        end
+        next unless block
+
+        name.each { |v| block.call(v) }
       end
     end
   end
