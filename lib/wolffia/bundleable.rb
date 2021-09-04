@@ -20,7 +20,7 @@ module Wolffia::Bundleable
       # noinspection RubyNilAnalysis, RubyResolve
       Pathname.new(caller_locations.fetch(0).path).dirname.join('..').expand_path.freeze.yield_self do |basedir|
         require 'stibium/bundled'
-      rescue LoadError
+      rescue ::LoadError
         loader.call(basedir)
       ensure
         othermod
