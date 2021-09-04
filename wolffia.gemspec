@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     ".yardopts",
     "README.md",
     "lib/wolffia.rb",
+    "lib/wolffia/autoloaded.rb",
     "lib/wolffia/bundleable.rb",
     "lib/wolffia/concurrent.rb",
     "lib/wolffia/config.rb",
@@ -31,10 +32,15 @@ Gem::Specification.new do |s|
     "lib/wolffia/container/builder.rb",
     "lib/wolffia/container/injector.rb",
     "lib/wolffia/dotenv.rb",
+    "lib/wolffia/errors.rb",
+    "lib/wolffia/errors/core.rb",
+    "lib/wolffia/errors/core/missing_injector_error.rb",
     "lib/wolffia/http.rb",
     "lib/wolffia/http/controller.rb",
+    "lib/wolffia/http/request.rb",
     "lib/wolffia/http/response.rb",
     "lib/wolffia/http/router.rb",
+    "lib/wolffia/http/router/has_handler.rb",
     "lib/wolffia/mixins.rb",
     "lib/wolffia/mixins/env.rb",
     "lib/wolffia/mixins/injectable.rb",
@@ -42,14 +48,15 @@ Gem::Specification.new do |s|
     "lib/wolffia/version.yml",
   ]
 
-  s.add_runtime_dependency("concurrent-ruby", ["~> 1.1.9"])
-  s.add_runtime_dependency("config", ["~> 3.1.0"])
-  s.add_runtime_dependency("dotenv", ["~> 2.7.6"])
-  s.add_runtime_dependency("dry-auto_inject", ["~> 0.8.0"])
-  s.add_runtime_dependency("dry-container", ["~> 0.8.0"])
-  s.add_runtime_dependency("hanami-router", ["~> 1.3.2"])
+  s.add_runtime_dependency("autoloaded", ["~> 2.3"])
+  s.add_runtime_dependency("concurrent-ruby", ["~> 1.1"])
+  s.add_runtime_dependency("config", ["~> 3.1"])
+  s.add_runtime_dependency("dotenv", ["~> 2.7"])
+  s.add_runtime_dependency("dry-auto_inject", ["~> 0.8"])
+  s.add_runtime_dependency("dry-container", ["~> 0.8"])
+  s.add_runtime_dependency("hanami-router", ["~> 1.3"])
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
-  s.add_runtime_dependency("stibium-bundled", ["~> 0.0.1", ">= 0.0.4"])
+  s.add_runtime_dependency("stibium-bundled", ["~> 0.0", ">= 0.0.4"])
   s.add_runtime_dependency("sys-proc", ["~> 1.1"])
 end
 
