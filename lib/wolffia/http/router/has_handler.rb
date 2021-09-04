@@ -25,7 +25,7 @@ module Wolffia::HTTP::Router::HasHandler
 
   protected
 
-  # Options according to hanler support
+  # Options according to handler support
   #
   # @param [Hash{Symbol => Object}] options
   #
@@ -46,16 +46,12 @@ module Wolffia::HTTP::Router::HasHandler
   #
   # @return [Array]
   def respond_with(action, controller: nil, env: {})
-    request = Wolffia::HTTP::Request.new(env)
-
-    action.call(request).to_a.yield_self do |response|
-      response.yield_self do |status, headers, body|
-        [
-          status,
-          (controller&.headers || {}).merge(headers).transform_keys(&:to_s),
-          body,
-        ]
-      end
+    Wolffia::HTTP::Request.new(env).then { |request| action.call(request).to_a }.then do |status, headers, body|
+      [
+        status,
+        (controller&.headers || {}).merge(headers).transform_keys(&:to_s),
+        env['REQUEST_METHOD'] == 'HEAD' ? [] : body # avoid bug with (at least) thin server
+      ]
     end
   end
 end
