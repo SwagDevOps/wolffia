@@ -1,0 +1,133 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+require_relative '../lib/wolffia'
+
+# ```shell
+# rackup -p 8080 -s thin www/config.ru
+# rhino -p 8080 www/config.ru start
+# ```
+class Wolffia::Serve
+  autoload(:Pathname, 'pathname')
+  autoload(:Rack, 'rack')
+  autoload(:Rhino, 'rhino')
+  autoload(:Slop, 'slop')
+
+  # @return [Pathname]
+  attr_reader :pwd
+
+  def initialize
+    self.tap { @pwd = Pathname.new(Dir.pwd).freeze }.freeze
+  end
+
+  def call(argv = ARGV)
+    parse_argv(argv.clone).to_h.then { |options| run(options) }
+  end
+
+  class << self
+    def call(...)
+      self.new.call(...)
+    end
+
+    def defaults
+      {
+        environment: 'development',
+        path: 'www',
+        server: 'rhino',
+        port: 8080,
+      }
+    end
+  end
+
+  protected
+
+  # @return [Slop::Result]
+  def parse_argv(argv)
+    parser.parse(argv)
+  rescue Slop::Error => e
+    warn([e.message, nil, options].join("\n"))
+    exit(22)
+  end
+
+  def run(options)
+    Dir.chdir(pwd.join(options.fetch(:path))) do
+      ENV['RACK_ENV'] = options.fetch(:environment)
+
+      options.to_h.fetch(:server).to_sym.then do |server|
+        puts "Starting server #{server} ..."
+
+        self.__send__(server == :rhino ? :rhino : :rackup, options)
+      end
+    end
+  end
+
+  # Start a rhino server with given options.
+  #
+  # @param [Hash{Symbol => Object}]
+  def rhino(options)
+    Dir.chdir(pwd.join(options.fetch(:path))) do
+      [
+        '--port', options.fetch(:port),
+        'config.ru',
+      ].then { |args| Rhino::CLI.new.parse(args.map(&:to_s)) }
+    end
+  end
+
+  # Start a rackup server with givem options.
+  #
+  # @param [Hash{Symbol => Object}]
+  #
+  # @see Rack::server.default_options
+  #
+  # Rack server options:
+  #
+  # ```ruby
+  # {:environment=>"development",
+  #  :pid=>nil,
+  #  :Port=>"8080",
+  #  :Host=>"localhost",
+  #  :AccessLog=>[],
+  #  :config=>"config.ru",
+  #  :server=>"thin"}
+  # ```
+  def rackup(options)
+    Dir.chdir(pwd.join(options.fetch(:path))) do
+      {
+        environment: options.fetch(:environment),
+        Port: options.fetch(:port),
+        config: 'config.ru',
+        server: options.fetch(:server).to_s,
+      }.then { |opts| Rack::Server.start(opts) }
+    end
+  end
+
+  # @return [Struct]
+  def defaults
+    self.class.defaults.then { |defaults| Struct.new(*defaults.keys).new(*defaults.values) }
+  end
+
+  # rubocop:disable Metrics/AbcSize
+
+  def options
+    Slop::Options.new.tap do |o|
+      o.string '-E-', '-environment', "default: #{defaults.environment}", default: defaults.environment
+      o.string '--path', "default: #{defaults.path}", default: defaults.path
+      o.string '--server', "default: #{defaults.server}", default: defaults.server
+      o.string '--port', "default: #{defaults.port}", default: defaults.port
+      o.on('--help', 'print this help and exit') { print_options(o) }
+    end
+  end
+  # rubocop:enable Metrics/AbcSize
+
+  def parser
+    Slop::Parser.new(options)
+  end
+
+  def print_options(opions, exit_code: nil)
+    puts(opions)
+    exit(exit_code) if exit_code
+  end
+end
+
+Wolffia::Serve.call if __FILE__ == $PROGRAM_NAME
