@@ -18,7 +18,6 @@ group :default do
   gem 'autoloaded', '~> 2.3'
   gem 'concurrent-ruby', '~> 1.1'
   gem 'config', '~> 3.1'
-  gem 'deep_dup', '~> 0.0'
   gem 'dotenv', '~> 2.7'
   gem 'dry-auto_inject', '~> 0.8'
   gem 'dry-container', '~> 0.8'
