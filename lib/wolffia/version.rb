@@ -6,8 +6,9 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require 'kamaze/version'
+Wolffia.instance_eval do
+  self.remove_const(:VERSION)
 
-class Wolffia
-  VERSION = Kamaze::Version.new.freeze
+  require('kamaze/version')
+    .then { self.const_set(:VERSION, ::Kamaze::Version.new.freeze) }
 end
