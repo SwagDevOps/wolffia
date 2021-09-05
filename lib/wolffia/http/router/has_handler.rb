@@ -12,10 +12,13 @@ require_relative '../router'
 module Wolffia::HTTP::Router::HasHandler
   # @return [Proc]
   def handler
+    # @type [Class] klass
+    # @type [Symbol, String] method
     lambda do |klass, method|
+      # @type [Hash{String => Object}] env
       lambda do |env|
-        instance_for(klass).yield_self do |controller|
-          controller.actions.fetch(method.to_sym).yield_self do |action|
+        instance_for(klass).then do |controller|
+          controller.actions.fetch(method.to_sym).then do |action|
             respond_with(action, env: env, controller: controller)
           end
         end
@@ -34,7 +37,7 @@ module Wolffia::HTTP::Router::HasHandler
     options.tap do
       return options unless options.key?(:to)
 
-      options[:to] = options[:to].yield_self do |action|
+      options[:to] = options[:to].then do |action|
         action.is_a?(Array) ? self.handler.call(*action) : action
       end
     end
