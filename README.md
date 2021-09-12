@@ -19,10 +19,10 @@ bundle exec rerun -b -- rackup -p 8080 -s thin www/config.ru
 bundle exec rerun -b -- rackup -p 8080 -s webrick www/config.ru
 ```
 
-### ```exe/server```
+### ```exe/serve```
 
 ```shell
-bundle exec rerun -b -- exe/server --server thin
+bundle exec rerun -b -- exe/serve --server thin
 ```
 
 <!-- hypelinks -->
