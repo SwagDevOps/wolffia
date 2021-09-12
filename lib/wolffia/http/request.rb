@@ -33,7 +33,7 @@ class Wolffia::HTTP::Request
 
   # @return [Symbol, nil]
   def method
-    env.fetch('REQUEST_METHOD')&.downcase.yield_self do |method|
+    env.fetch('REQUEST_METHOD')&.upcase.yield_self do |method|
       method ? method.to_sym : nil
     end
   end
