@@ -14,8 +14,9 @@ class Wolffia::Container::Builder
   include(Wolffia::Mixins::Env)
 
   # @param [String, Pathname] base_dir
-  def initialize(base_dir)
+  def initialize(base_dir, **extra)
     @base_dir = Pathname.new(base_dir.to_s).realpath
+    @extra = extra.transform_keys(&:to_sym)
   end
 
   # @return [Symbol]
@@ -39,7 +40,8 @@ class Wolffia::Container::Builder
   # @return [Wolffia::Container]
   def call
     container do |c|
-      c.populate(:router) { Wolffia::HTTP::Router.new.load_file(self.base_dir.join('routes/web.rb')) }
+      self.extra.each { |k, v| c[k] = v }
+      c.populate(:router) { make_router(c).register }
       c.load_file(self.file)
       c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
     end
@@ -57,23 +59,34 @@ class Wolffia::Container::Builder
   # @return [Pathname]
   attr_reader :base_dir
 
+  attr_reader :extra
+
   # @yieldreturn [Wolffia::Container]
   def container
     Wolffia::Container.new.tap do |c|
       c[:'app.base_dir'] = self.base_dir
       c[:'app.environment'] = self.environment
       c[:'app.settings'] = Wolffia::Config.new(self.base_dir, self.environment).settings
-      c[:json] = json_loader
+      c[:json] = json
 
       yield c if block_given?
     end
   end
 
   # @api private
+  #
   # @return [Proc]
-  def json_loader
+  def json
     lambda do
       (require 'json').yield_self { JSON }
     end
+  end
+
+  # @param [Wolffia::Container] container
+  #
+  # @return [Wolffia::HTTP::Router]
+  def make_router(container)
+    { load_path: container[:'http.router.load_path'], loadables: container[:'http.router.loadables'] }
+      .then { |options| ::Wolffia::HTTP::Router.new(**options) }
   end
 end

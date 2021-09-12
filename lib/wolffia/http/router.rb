@@ -15,6 +15,30 @@ class Wolffia::HTTP::Router < Hanami::Router
   include(Wolffia::Autoloaded).autoloaded(self.binding)
   include Wolffia::HTTP::Router::HasHandler
 
+  # @return [Pathname]
+  attr_reader :load_path
+
+  # @param [String] load_path
+  # @param [Array<String, Symbol>]
+  def initialize(options = {}, load_path:, loadables: [], &blk)
+    @load_path = Pathname.new(load_path)
+    @loadables = loadables
+    super(options, &blk)
+  end
+
+  # @return [Array<Symbol>]
+  def loadables
+    @loadables.map { |name| Pathname.new(name.to_s).basename.to_s.gsub('.', '/').to_sym }
+  end
+
+  def register
+    self.tap do
+      self.loadables.each do |fp|
+        self.load_loadable(fp)
+      end
+    end
+  end
+
   def get(path, options = {}, &blk)
     super(path, handleable(options), &blk)
   end
@@ -44,7 +68,7 @@ class Wolffia::HTTP::Router < Hanami::Router
   end
 
   def root(options = {}, &blk)
-    super(optionize(options), &blk)
+    super(handleable(options), &blk)
   end
 
   def redirect(path, options = {}, &blk)
@@ -57,16 +81,25 @@ class Wolffia::HTTP::Router < Hanami::Router
   #
   # @return [self]
   def load_file(filepath)
-    self.tap do
-      return self unless filepath
-
-      Pathname.new(filepath).yield_self do |file|
-        self.instance_eval(file.read, file.to_s, 1) if file.exist? and file.readable?
-      end
-    end
+    Pathname.new(filepath).realpath.tap { |file| self.instance_eval(file.read, file.to_s, 1) }
   end
 
   protected
+
+  # Load routes from given file.
+  #
+  # @param [String, Symbol, nil] name
+  #
+  # @return [self]
+  def load_loadable(name)
+    self.tap do
+      return self unless name
+
+      self.load_path.join("#{name}.rb").yield_self do |file|
+        self.load_file(file)
+      end
+    end
+  end
 
   # @return [Wolffia::Container::Injector]
   attr_reader :injector

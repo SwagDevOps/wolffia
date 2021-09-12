@@ -36,6 +36,7 @@ class Wolffia
   end
 
   include(Wolffia::Mixins::Env)
+  include(Wolffia::HasPaths)
 
   def environment
     container&.resolve(:'app.environment')
@@ -46,9 +47,20 @@ class Wolffia
     @container&.injector
   end
 
+  # Rack middlewares
+  #
+  # @return [Array<String, Symbol>]
+  def middlewares
+    []
+  end
+
   # @param [Rack::Builder] builder
   def run(builder)
     self.tap do
+      self.make_middleware(builder).tap do |middleware|
+        container['http.middleware'] = middleware.register
+      end
+
       resolve(:router).yield_self do |router|
         builder.run(router)
       end
@@ -86,6 +98,8 @@ class Wolffia
   # @return [Pathname]
   attr_reader :path
 
+  alias base_dir path
+
   # @return [Wolffia::Container]
   attr_accessor :container
 
@@ -93,9 +107,22 @@ class Wolffia
     Concurrent.call
 
     self.path = path
-    self.container = dotenv.yield_self { Container.build(self.path) }
+    self.container = dotenv.yield_self { Container.build(self.path, **extra) }
+    self.container
 
     self.register.freeze
+  end
+
+  # Extra elements used to build container.
+  #
+  # @api private
+  #
+  # @return [Hash{Synmbol => Object}]
+  def extra
+    {
+      'http.router.loadables': self.routes,
+      'http.router.load_path': self.routes_path,
+    }
   end
 
   # Set base path for application
@@ -138,5 +165,14 @@ class Wolffia
   # @api public
   def resolve(key, &block)
     container.resolve(key, &block)
+  end
+
+  # Make a middleware from given builder.
+  #
+  # @api private
+  #
+  # @param [Rack::Builder]
+  def make_middleware(builder)
+    Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
   end
 end
