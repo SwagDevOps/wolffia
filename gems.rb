@@ -39,6 +39,7 @@ group :development do
   # web ----------------------------------
   gem 'better_errors', '~> 2.9'
   gem 'binding_of_caller', '~> 1.0'
+  gem 'rack-rewrite', '~> 1.5'
   gem 'thin', '~> 1.8'
   gem 'webrick', '~> 1.6'
   github 'ksylvest/rhino', { branch: 'master' }

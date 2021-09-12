@@ -127,6 +127,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
     rack (2.2.3)
+    rack-rewrite (1.5.1)
     rainbow (3.0.0)
     rake (13.0.6)
     rb-fsevent (0.11.0)
@@ -214,6 +215,7 @@ DEPENDENCIES
   kamaze-version (~> 1.0)
   listen (~> 3.1)
   pry (~> 0.12)
+  rack-rewrite (~> 1.5)
   rake (~> 13.0)
   redcarpet (~> 3.5)
   rerun!
