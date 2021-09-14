@@ -24,12 +24,12 @@ class Wolffia::Container::Builder
     env('APP_ENV', 'development').to_sym
   end
 
-  # File used to load services.
+  # Files used to load services.
   #
-  # @return [Pathname]
-  def file
+  # @return [Array<Pathname>]
+  def files
     # noinspection RubyYardReturnMatch
-    self.base_dir.join('container/services.rb')
+    self.base_dir.glob('**/*.rb').sort
   end
 
   # @return [String]
@@ -42,7 +42,7 @@ class Wolffia::Container::Builder
     container do |c|
       self.extra.each { |k, v| c[k] = v }
       c.populate(:router) { make_router(c).register }
-      c.load_file(self.file)
+      files.each { |file| c.load_file(file) }
       c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
     end
   end

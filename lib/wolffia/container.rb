@@ -69,11 +69,7 @@ class Wolffia::Container < Dry::Container
   # @return [self]
   def load_file(filepath)
     self.tap do
-      Pathname.new(filepath).yield_self do |file|
-        ((file.exist? and file.readable?) ? self.instance_eval(file.read, file.to_s, 1) : {}).each do |k, v|
-          self[k] = v
-        end
-      end
+      Pathname.new(filepath).yield_self { |file| self.instance_eval(file.read, file.to_s, 1) }
     end
   end
 end

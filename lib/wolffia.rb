@@ -57,7 +57,7 @@ class Wolffia
   # @param [Rack::Builder] builder
   def run(builder)
     self.tap do
-      self.make_middleware(builder).tap do |middleware|
+      self.middleware_from(builder).tap do |middleware|
         container['http.middleware'] = middleware.register
       end
 
@@ -103,11 +103,13 @@ class Wolffia
   # @return [Wolffia::Container]
   attr_accessor :container
 
+  alias services container
+
   def initialize(path: nil)
     Concurrent.call
 
     self.path = path
-    self.container = dotenv.yield_self { Container.build(self.path, **extra) }
+    self.container = dotenv.yield_self { Container.build(services_path, **extra) }
     self.container
 
     self.register.freeze
@@ -172,7 +174,7 @@ class Wolffia
   # @api private
   #
   # @param [Rack::Builder]
-  def make_middleware(builder)
+  def middleware_from(builder)
     Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
   end
 end

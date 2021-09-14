@@ -10,12 +10,17 @@ require_relative '../wolffia'
 
 # Define some paths where different bootstrap element are retrieved.
 module Wolffia::HasPaths
+  # @return [Pathname]
+  def bootstrap_path
+    self.base_dir.join('bootstrap')
+  end
+
   # Get path to the route declarations.
   #
   # @return [Pathname]
   def routes_path
     # noinspection RubyMismatchedReturnType
-    self.base_dir.join('routes')
+    self.bootstrap_path.join('routes')
   end
 
   # Get path to the middleware declarations.
@@ -23,6 +28,11 @@ module Wolffia::HasPaths
   # @return [Pathname]
   def middlewares_path
     # noinspection RubyMismatchedReturnType
-    self.base_dir.join('middlewares')
+    self.bootstrap_path.join('middlewares')
+  end
+
+  def services_path
+    # noinspection RubyMismatchedReturnType
+    self.bootstrap_path.join('services')
   end
 end
