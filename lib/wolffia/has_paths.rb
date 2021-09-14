@@ -61,5 +61,6 @@ module Wolffia::HasPaths
         .map { |m| [m.to_s.gsub(/_path$/, '').to_sym, __send__(m)] }
         .sort
         .to_h
+        .transform_values(&:freeze)
   end
 end
