@@ -41,9 +41,9 @@ class Wolffia::Container::Builder
   def call
     container do |c|
       self.extra.each { |k, v| c[k] = v }
-      c.populate(:router) { make_router(c).register }
+      c.populate(:'http.router') { make_router(c).register }
       files.each { |file| c.load_file(file) }
-      c[:router] = c.resolve(:router).tap { |router| router.__send__(:injector=, c.injector) }
+      c[:'http.router'] = c.resolve(:'http.router').tap { |router| router.__send__(:injector=, c.injector) }
     end
   end
 

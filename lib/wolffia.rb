@@ -61,9 +61,7 @@ class Wolffia
         container['http.middleware'] = middleware.register
       end
 
-      resolve(:router).yield_self do |router|
-        builder.run(router)
-      end
+      resolve(:'http.router').then { |router| builder.run(router) }
     end
   end
 
