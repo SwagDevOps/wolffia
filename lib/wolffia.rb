@@ -156,8 +156,9 @@ class Wolffia
   def build_container
     dotenv.then { Container.build(services_path, **extra) }.tap do |container|
       container[:'app.settings'] = Wolffia::Config.new(config_path, self.environment).settings
-      self.paths.each do |name, path|
-        container.register(:"app.paths.#{name}_path", memoize: false) { path }
+      self.paths.transform_keys { |k| "#{k}_path".to_sym }.tap do |paths|
+        container[:'app.paths'] = paths
+        paths.each { |name, path| container[:"app.paths.#{name}"] = path }
       end
     end
   end
