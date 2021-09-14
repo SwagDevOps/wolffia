@@ -8,11 +8,22 @@
 
 require_relative '../wolffia'
 
-# Define some paths where different bootstrap element are retrieved.
+# Define some paths where bootstrap elements and config are stored.
 module Wolffia::HasPaths
   # @return [Pathname]
   def bootstrap_path
     self.base_dir.join('bootstrap')
+  end
+
+  # Fet path to where config files are stored.
+  #
+  # Config helps you easily manage environment specific settings.
+  #
+  # @see https://github.com/rubyconfig/config
+  #
+  # @return [Pathname]
+  def config_path
+    self.base_dir.join('config')
   end
 
   # Get path to the route declarations.
@@ -31,8 +42,24 @@ module Wolffia::HasPaths
     self.bootstrap_path.join('middlewares')
   end
 
+  # Get path where services definitions are stored.
+  #
+  # @see https://github.com/dry-rb/dry-container
+  #
+  # @return [Pathname]
   def services_path
     # noinspection RubyMismatchedReturnType
     self.bootstrap_path.join('services')
+  end
+
+  # Get all defined paths.
+  #
+  # @return [Hash{Symbol => Pathname}]
+  def paths
+    self.public_methods
+        .select { |m| m[/.+_path$/] }
+        .map { |m| [m.to_s.gsub(/_path$/, '').to_sym, public_send(m)] }
+        .sort
+        .to_h
   end
 end
