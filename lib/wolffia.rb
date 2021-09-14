@@ -95,22 +95,21 @@ class Wolffia
 
   protected
 
-  # @return [Pathname]
-  attr_reader :path
-
-  alias base_dir path
-
   # @return [Wolffia::Container]
   attr_accessor :container
 
   alias services container
 
+  # @return [Pathname]
+  attr_reader :path
+
+  alias base_path path
+
   def initialize(path: nil)
     Concurrent.call
 
-    self.path = path
-    self.container = dotenv.yield_self { Container.build(services_path, **extra) }
-    self.container
+    self.path = path.freeze
+    self.container = build_container
 
     self.register.freeze
   end
@@ -151,6 +150,15 @@ class Wolffia
   def register(method_name = :__app__)
     self.tap do |app|
       ::Kernel.__send__(:define_method, method_name) { app }
+    end
+  end
+
+  def build_container
+    dotenv.then { Container.build(services_path, **extra) }.tap do |container|
+      container[:'app.settings'] = Wolffia::Config.new(config_path, self.environment).settings
+      self.paths.each do |name, path|
+        container.register(:"app.paths.#{name}_path", memoize: false) { path }
+      end
     end
   end
 

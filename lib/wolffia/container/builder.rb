@@ -13,9 +13,9 @@ class Wolffia::Container::Builder
   autoload(:Pathname, 'pathname')
   include(Wolffia::Mixins::Env)
 
-  # @param [String, Pathname] base_dir
-  def initialize(base_dir, **extra)
-    @base_dir = Pathname.new(base_dir.to_s).realpath
+  # @param [String, Pathname] path
+  def initialize(path, **extra)
+    @path = Pathname.new(path.to_s).realpath
     @extra = extra.transform_keys(&:to_sym)
   end
 
@@ -29,12 +29,12 @@ class Wolffia::Container::Builder
   # @return [Array<Pathname>]
   def files
     # noinspection RubyYardReturnMatch
-    self.base_dir.glob('**/*.rb').sort
+    path.glob('**/*.rb').sort
   end
 
   # @return [String]
   def to_path
-    self.file.to_path
+    self.path.to_path
   end
 
   # @return [Wolffia::Container]
@@ -57,16 +57,14 @@ class Wolffia::Container::Builder
   protected
 
   # @return [Pathname]
-  attr_reader :base_dir
+  attr_reader :path
 
   attr_reader :extra
 
   # @yieldreturn [Wolffia::Container]
   def container
     Wolffia::Container.new.tap do |c|
-      c[:'app.base_dir'] = self.base_dir
       c[:'app.environment'] = self.environment
-      c[:'app.settings'] = Wolffia::Config.new(self.base_dir, self.environment).settings
       c[:json] = json
 
       yield c if block_given?

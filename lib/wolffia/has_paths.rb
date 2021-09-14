@@ -12,7 +12,7 @@ require_relative '../wolffia'
 module Wolffia::HasPaths
   # @return [Pathname]
   def bootstrap_path
-    self.base_dir.join('bootstrap')
+    self.base_path.join('bootstrap')
   end
 
   # Fet path to where config files are stored.
@@ -23,7 +23,7 @@ module Wolffia::HasPaths
   #
   # @return [Pathname]
   def config_path
-    self.base_dir.join('config')
+    self.base_path.join('config')
   end
 
   # Get path to the route declarations.
@@ -56,9 +56,9 @@ module Wolffia::HasPaths
   #
   # @return [Hash{Symbol => Pathname}]
   def paths
-    self.public_methods
+    self.methods
         .select { |m| m[/.+_path$/] }
-        .map { |m| [m.to_s.gsub(/_path$/, '').to_sym, public_send(m)] }
+        .map { |m| [m.to_s.gsub(/_path$/, '').to_sym, __send__(m)] }
         .sort
         .to_h
   end
