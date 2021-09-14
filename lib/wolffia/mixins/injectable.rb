@@ -52,7 +52,7 @@ module Wolffia::Mixins::Injectable
       end
     end
 
-    # @param
+    # @param [Wolffia:;Injector] injector
     def injector=(injector)
       (@injector = injector).tap { include_injector }
     end

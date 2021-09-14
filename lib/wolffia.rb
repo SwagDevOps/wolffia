@@ -180,7 +180,7 @@ class Wolffia
   #
   # @api private
   #
-  # @param [Rack::Builder]
+  # @param [Rack::Builder] builder
   def middleware_from(builder)
     Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
   end

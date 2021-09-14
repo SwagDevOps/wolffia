@@ -18,8 +18,9 @@ class Wolffia::HTTP::Router < Hanami::Router
   # @return [Pathname]
   attr_reader :load_path
 
+  # @param [Hash] options
   # @param [String] load_path
-  # @param [Array<String, Symbol>]
+  # @param [Array<String, Symbol>] loadables
   def initialize(options = {}, load_path:, loadables: [], &blk)
     @load_path = Pathname.new(load_path)
     @loadables = loadables

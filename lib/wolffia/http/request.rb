@@ -52,7 +52,7 @@ class Wolffia::HTTP::Request
 
   protected
 
-  # @param [Hash{String => String}]
+  # @param [Hash{String => String}] headers
   #
   # @return [Hash{String => String}]
   def prepare_headers(headers)
