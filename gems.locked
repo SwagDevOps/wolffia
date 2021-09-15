@@ -182,7 +182,7 @@ GEM
       tty-screen (~> 0.8)
       wisper (~> 2.0)
     tty-screen (0.8.1)
-    unicode-display_width (2.0.0)
+    unicode-display_width (2.1.0)
     url_mount (0.2.1)
       rack
     webrick (1.7.0)
