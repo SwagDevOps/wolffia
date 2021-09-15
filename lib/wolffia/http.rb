@@ -10,5 +10,5 @@ require_relative '../wolffia'
 
 # Module namesapce
 module Wolffia::HTTP
-  include(Wolffia::Autoloaded).autoloaded(self.binding)
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 end

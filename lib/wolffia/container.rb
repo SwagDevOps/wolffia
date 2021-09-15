@@ -12,13 +12,9 @@ require 'dry-container'
 # A simple, thread-safe container, dependency injection system in combination with dry-auto_inject.
 #
 # @see https://dry-rb.org/gems/dry-container/0.7/
-class Wolffia::Container < Dry::Container
+class Wolffia::Container < ::Dry::Container
   autoload(:Pathname, 'pathname')
-
-  {
-    Builder: 'builder',
-    Injector: 'injector',
-  }.each { |s, fp| autoload(s, "#{__dir__}/container/#{fp}") }
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 
   class << self
     # @see Wolffia::Container::Builder#initialize
@@ -36,7 +32,7 @@ class Wolffia::Container < Dry::Container
 
   def register(key, contents = nil, options = {}, &block)
     if self.key?(key)
-      Dry::Container.new.tap do |container|
+      ::Dry::Container.new.tap do |container|
         container.register(key, contents, options, &block)
 
         return self.merge(container)
@@ -56,7 +52,7 @@ class Wolffia::Container < Dry::Container
   def populate(key, &blk)
     loop do
       self[key.to_sym] = blk.call(self)
-    rescue Dry::Container::Error => e
+    rescue ::Dry::Container::Error => e
       e.message.match(/^Nothing\s+registered\s+with\s+the\s+key\s+(:(.*)|"(.*)")$/).to_a[2].tap do |m|
         # self.register(m.to_sym, memoize: true) { self.resolve(m.to_sym) }
         self[m.to_sym] = nil

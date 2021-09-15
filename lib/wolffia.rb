@@ -21,13 +21,13 @@ class Wolffia
   "#{__dir__}/wolffia".yield_self do |path|
     self.tap do
       # noinspection RubyResolve
-      [:bundleable, :autoloaded].map { |s| require("#{path}/#{s}") }.then do
+      [:bundleable, :mixins].map { |s| require("#{path}/#{s}") }.then do
         include(::Wolffia::Bundleable)
-        include(::Wolffia::Autoloaded)
+        include(::Wolffia::Mixins::Autoloaded)
         autoload(:VERSION, "#{path}/version")
       end
     end.autoloaded do |autoloading|
-      autoloading.except(:Autoloaded, :Bundleable, :VERSION)
+      autoloading.except(:Bundleable, :Mixins, :VERSION)
 
       {
         HTTP: 'http',
@@ -35,8 +35,8 @@ class Wolffia
     end
   end
 
-  include(Wolffia::Mixins::Env)
-  include(Wolffia::HasPaths)
+  include(::Wolffia::Mixins::Env)
+  include(::Wolffia::HasPaths)
 
   def environment
     container&.resolve(:'app.environment')
@@ -182,6 +182,6 @@ class Wolffia
   #
   # @param [Rack::Builder] builder
   def middleware_from(builder)
-    Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
+    ::Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
   end
 end

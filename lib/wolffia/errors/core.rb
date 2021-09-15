@@ -10,5 +10,5 @@ require_relative '../errors'
 
 # Namespace module
 module Wolffia::Errors::Core
-  include(Wolffia::Autoloaded).autoloaded(self.binding)
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 end

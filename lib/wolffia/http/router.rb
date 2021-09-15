@@ -12,8 +12,8 @@ require 'hanami/router'
 # HTTP router
 class Wolffia::HTTP::Router < Hanami::Router
   autoload(:Pathname, 'pathname')
-  include(Wolffia::Autoloaded).autoloaded(self.binding)
-  include Wolffia::HTTP::Router::HasHandler
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+  include(::Wolffia::HTTP::Router::HasHandler)
 
   # @return [Pathname]
   attr_reader :load_path
@@ -106,7 +106,7 @@ class Wolffia::HTTP::Router < Hanami::Router
   attr_reader :injector
 
   def controllers
-    @controllers ||= Concurrent::Hash.new
+    @controllers ||= ::Concurrent::Hash.new
   end
 
   def injector=(injector)
