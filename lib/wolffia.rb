@@ -54,6 +54,13 @@ class Wolffia
     []
   end
 
+  # Routes
+  #
+  # @return [Array<String, Symbol>]
+  def routes
+    []
+  end
+
   # @param [Rack::Builder] builder
   def run(builder)
     self.tap do
@@ -61,7 +68,7 @@ class Wolffia
         container['http.middleware'] = middleware.register
       end
 
-      resolve(:'http.router').then { |router| builder.run(router) }
+      container.resolve(:'http.router').then { |router| builder.run(router) }
     end
   end
 
@@ -159,21 +166,6 @@ class Wolffia
         paths.each { |name, path| container[:"app.paths.#{name}"] = path }
       end
     end
-  end
-
-  # Resolve an item from the container
-  #
-  # @param [Mixed] key
-  #   The key for the item you wish to resolve
-  # @yield
-  #   Fallback block to call when a key is missing. Its result will be returned
-  # @yieldparam [Mixed] key Missing key
-  #
-  # @return [Mixed]
-  #
-  # @api public
-  def resolve(key, &block)
-    container.resolve(key, &block)
   end
 
   # Make a middleware from given builder.
