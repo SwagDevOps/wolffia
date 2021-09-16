@@ -20,8 +20,8 @@ class Wolffia::Container < ::Dry::Container
     # @see Wolffia::Container::Builder#initialize
     #
     # @return [Wolffia::Container]
-    def build(...)
-      Builder.call(...)
+    def build(*args)
+      Builder.call(*args)
     end
   end
 

@@ -11,12 +11,14 @@ require_relative '../container'
 # Build an instance of container.
 class Wolffia::Container::Builder
   autoload(:Pathname, 'pathname')
-  include(Wolffia::Mixins::Env)
+  include(::Wolffia::Mixins::Env)
 
   # @param [String, Pathname] path
-  def initialize(path, **extra)
-    @path = Pathname.new(path.to_s).realpath
-    @extra = extra.transform_keys(&:to_sym)
+  #
+  # @param [Hash] volatile volatile values used to build container
+  def initialize(path, volatile = {})
+    @path = Pathname.new(path.to_s).realpath.freeze
+    @volatile = volatile.transform_keys(&:to_sym).freeze
   end
 
   # @return [Symbol]
@@ -40,8 +42,7 @@ class Wolffia::Container::Builder
   # @return [Wolffia::Container]
   def call
     container do |c|
-      self.extra.each { |k, v| c[k] = v }
-      c.populate(:'http.router') { make_router(c).register }
+      c.populate(:'http.router') { router.register }
       files.each { |file| c.load_file(file) }
       c[:'http.router'] = c.resolve(:'http.router').tap { |router| router.__send__(:injector=, c.injector) }
     end
@@ -49,8 +50,8 @@ class Wolffia::Container::Builder
 
   class << self
     # @return [Wolffia::Container]
-    def call(...)
-      self.new(...).call
+    def call(*args)
+      self.new(*args).call
     end
   end
 
@@ -59,11 +60,12 @@ class Wolffia::Container::Builder
   # @return [Pathname]
   attr_reader :path
 
-  attr_reader :extra
+  # @return [Hash{Symbol => Object}]
+  attr_reader :volatile
 
   # @yieldreturn [Wolffia::Container]
   def container
-    Wolffia::Container.new.tap do |c|
+    ::Wolffia::Container.new.tap do |c|
       c[:'app.environment'] = self.environment
       c[:json] = json
 
@@ -80,11 +82,9 @@ class Wolffia::Container::Builder
     end
   end
 
-  # @param [Wolffia::Container] container
-  #
   # @return [Wolffia::HTTP::Router]
-  def make_router(container)
-    { load_path: container[:'http.router.load_path'], loadables: container[:'http.router.loadables'] }
+  def router
+    { load_path: volatile.fetch(:'http.router.load_path'), loadables: volatile.fetch(:'http.router.loadables') }
       .then { |options| ::Wolffia::HTTP::Router.new(**options) }
   end
 end

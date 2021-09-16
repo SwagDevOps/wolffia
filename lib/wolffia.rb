@@ -37,6 +37,7 @@ class Wolffia
 
   include(::Wolffia::Mixins::Env)
   include(::Wolffia::HasPaths)
+  include(::Wolffia::Inheritance)
 
   def environment
     container&.resolve(:'app.environment')
@@ -45,20 +46,6 @@ class Wolffia
   # @return [Wolffia::Container::Injector, nil]
   def injector
     @container&.injector
-  end
-
-  # Rack middlewares
-  #
-  # @return [Array<String, Symbol>]
-  def middlewares
-    []
-  end
-
-  # Routes
-  #
-  # @return [Array<String, Symbol>]
-  def routes
-    []
   end
 
   # @param [Rack::Builder] builder
@@ -119,18 +106,6 @@ class Wolffia
     self.register.freeze
   end
 
-  # Extra elements used to build container.
-  #
-  # @api private
-  #
-  # @return [Hash{Synmbol => Object}]
-  def extra
-    {
-      'http.router.loadables': self.routes,
-      'http.router.load_path': self.routes_path,
-    }
-  end
-
   # Set base path for application
   #
   # @param [String, Pathname] path
@@ -158,15 +133,24 @@ class Wolffia
     end
   end
 
+  # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+
   def build_container
-    dotenv.then { Container.build(services_path, **extra) }.tap do |container|
-      container[:'app.settings'] = Wolffia::Config.new(config_path, self.environment).settings
+    volatile = {
+      'http.router.loadables': self.routes,
+      'http.router.load_path': self.routes_path,
+    }
+
+    dotenv.then { Container.build(services_path, volatile) }.tap do |container|
+      container[:'app.settings'] = ::Wolffia::Config.new(config_path, self.environment).settings
+
       self.paths.transform_keys { |k| "#{k}_path".to_sym }.tap do |paths|
         container[:'app.paths'] = paths
         paths.each { |name, path| container[:"app.paths.#{name}"] = path }
       end
     end
   end
+  # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   # Make a middleware from given builder.
   #
