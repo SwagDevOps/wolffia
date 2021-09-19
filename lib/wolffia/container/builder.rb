@@ -17,8 +17,10 @@ class Wolffia::Container::Builder
   #
   # @param [Hash] volatile volatile values used to build container
   def initialize(path, volatile = {})
-    @path = Pathname.new(path.to_s).realpath.freeze
+    @path = Pathname.new(path.to_s).then { |v| v.directory? ? v.realpath : v }.freeze
     @volatile = volatile.transform_keys(&:to_sym).freeze
+
+    self.freeze
   end
 
   # @return [Symbol]
