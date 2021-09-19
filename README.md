@@ -25,6 +25,20 @@ bundle exec rerun -b -- rackup -p 8080 -s webrick www/config.ru
 bundle exec rerun -b -- exe/serve --server thin
 ```
 
+## Coding Style
+
+### git ``pre-commit`` hook
+
+```shell
+# #!/usr/bin/env sh
+# .git/hooks/pre-commit
+
+set -eu
+
+codeclimate analyze | grep -E '^==.*issue.*==$'
+bundle exec rake cs:pre-commit
+```
+
 <!-- hypelinks -->
 
 [better_errors#multi-worker-servers]: https://github.com/BetterErrors/better_errors#unicorn-puma-and-other-multi-worker-servers
