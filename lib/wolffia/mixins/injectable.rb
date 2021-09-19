@@ -11,6 +11,19 @@ require_relative '../mixins'
 # Provide class-level injector accessor and inject method
 #
 # Some inspiration taken from ``dry-auto_inject``.
+#
+# Sample of use:
+#
+# ```ruby
+# class Sample
+#   include(::Wolffia::Mixins::Injectable)
+#   auto_inject(:parrot, paths: 'app.paths', bird: :parrot)
+#
+#   def repeat(sentence)
+#     self.parrot.call(sentence)
+#   end
+# end
+# ```
 module Wolffia::Mixins::Injectable
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 
@@ -30,7 +43,11 @@ module Wolffia::Mixins::Injectable
 
   class << self
     def included(klass)
-      klass.extend(ClassMethods)
+      included_handler.tap do |handler|
+        return handler.call(klass) if klass.is_a?(Class)
+
+        klass.singleton_class.__send__(:define_method, __method__) { |c| handler.call(c) }
+      end
     end
 
     # @param [Wolffia::Container] container
@@ -47,6 +64,13 @@ module Wolffia::Mixins::Injectable
     # @api private
     def container_retriever
       -> { raise MISSING_INJECTOR_ERROR, 'can not retrieve container' }
+    end
+
+    protected
+
+    # @api private
+    def included_handler
+      ->(klass) { klass.extend(ClassMethods) if klass.is_a?(Class) }
     end
   end
 
@@ -68,29 +92,16 @@ module Wolffia::Mixins::Injectable
     protected
 
     def auto_inject(*args, **kwargs)
-      args.concat(kwargs.to_a).map { |v| (v.is_a?(Array) ? v : [v, v]).freeze.map(&:freeze) }.then do |injectables|
-        @injectables = injectables.dup.concat(injectables).freeze unless injectables.empty?
-      end
+      args.concat(kwargs.to_a)
+          .map { |v| (v.is_a?(Array) ? v : [v, v].map(&:to_sym)).freeze.map(&:freeze) }
+          .then { |h| @injectables = h.to_h.merge(@injectables || {}).freeze unless h.empty? }
     end
 
-    # rubocop:disable Metrics/AbcSize
-
-    # Get injectables as tuples.
+    # Get injectables declaration.
     #
-    # @return [Haah{Symbol => Symbol}]
+    # @return [Hash{Symbol => Symbol}]
     def injectables
-      {}.tap do
-        return @injectables.dup.to_h.map { |k, v| [k.to_sym, v.to_sym] }.to_h if @injectables
-
-        self.ancestors[1..-1].each do |ancestor|
-          next unless ancestor.methods.include?(:injectables)
-
-          next unless ancestor.ancestors[1..-1]&.include?(::Wolffia::Mixins::Injectable)
-
-          return ancestor.__send__(:injectables) if flags.uniq.first == true
-        end
-      end
+      Visitor.new(self).call(@injectables.dup)
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end
