@@ -1,0 +1,10 @@
+version: "2"
+exclude_patterns:
+  - build/
+  - coverage/
+  - doc/
+  - spec/
+  - vendor/
+  - Rakefile
+  - bundle/
+
