@@ -22,8 +22,9 @@ class Wolffia::HTTP::Router < Hanami::Router
   # @param [String] load_path
   # @param [Array<String, Symbol>] loadables
   def initialize(options = {}, load_path:, loadables: [], &blk)
-    @load_path = Pathname.new(load_path)
-    @loadables = loadables
+    @load_path = Pathname.new(load_path).freeze
+    @loadables = loadables.dup.freeze
+
     super(options, &blk)
   end
 
@@ -102,18 +103,16 @@ class Wolffia::HTTP::Router < Hanami::Router
     end
   end
 
-  # @return [Wolffia::Container::Injector]
-  attr_reader :injector
+  # @return [Wolffia::Container]
+  attr_reader :container
 
   def controllers
     @controllers ||= ::Concurrent::Hash.new
   end
 
-  def injector=(injector)
-    (@injector = injector).tap do
-      self.controllers.to_h.each_key do |klass|
-        self.controllers[klass] = self.instance_for(klass)
-      end
+  def container=(container)
+    (@container = container).tap do
+      self.controllers.to_h.each_key { |klass| self.controllers[klass] = self.make(klass) }
     end
   end
 
@@ -124,10 +123,19 @@ class Wolffia::HTTP::Router < Hanami::Router
   # @return [Wolffia::HTTP::Controller]
   def instance_for(controller)
     # @type [Wolffia::HTTP::Controller] instance
-    self.controllers[controller] ||= controller.tap { |c| c.__send__(:injector=, injector) }.new.tap do |instance|
-      instance.actions.yield_self do |actions|
-        # Ensure actions are indexed by symbols
-        instance.singleton_class.__send__(:define_method, :actions) { actions.transform_keys(&:to_sym) }
+    self.controllers[controller] ||= make(controller)
+  end
+
+  # Make a instance of controller from given class.
+  #
+  # @param [Class] controller
+  #
+  # @return [Wolffia::HTTP::Controller]
+  def make(controller)
+    controller.new.tap do |instance|
+      # Ensure actions are indexed by symbols
+      instance.actions.transform_keys(&:to_sym).yield_self do |actions|
+        instance.singleton_class.__send__(:define_method, :actions) { actions }
       end
     end
   end

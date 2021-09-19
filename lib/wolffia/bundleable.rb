@@ -35,14 +35,7 @@ module Wolffia::Bundleable
     def bundle_handler
       # @type [Stibium::Bundled::Bundle] bundle
       lambda do |bundle|
-        if bundle.locked? and bundle.installed? and Object.const_defined?(:Gem)
-          # rubocop:disable Style/SoleNestedConditional
-          if bundle.specifications.keep_if { |s| s.name == 'kamaze-project' }.any?
-            # noinspection RubyResolve
-            require 'kamaze/project/core_ext/pp'
-          end
-          # rubocop:enable Style/SoleNestedConditional
-        end
+        with_bundle(bundle, ['kamaze-project']) { require 'kamaze/project/core_ext/pp' }
       end
     end
 
@@ -60,6 +53,18 @@ module Wolffia::Bundleable
           Pathname.glob(patterns).first&.dirname&.tap { |gem_dir| require gem_dir.join('lib/stibium/bundled') }
         end
       end
+    end
+
+    # @param [Stibium::Bundled::Bundle] bundle
+    # @param [Array<String>] gems
+    def with_bundle(bundle, gems, &block)
+      return false unless bundle.locked? and bundle.installed? and Object.const_defined?(:Gem)
+
+      gems.each do |gem_name|
+        return false unless bundle.specifications.keep_if { |s| s.name == gem_name.to_s }.any?
+      end
+
+      block.call
     end
   end
 end

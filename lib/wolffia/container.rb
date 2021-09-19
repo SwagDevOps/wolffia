@@ -25,11 +25,6 @@ class Wolffia::Container < ::Dry::Container
     end
   end
 
-  # @return [Wolffia::Container::Injector]
-  def injector
-    Injector.new(self)
-  end
-
   def register(key, contents = nil, options = {}, &block)
     if self.key?(key)
       ::Dry::Container.new.tap do |container|

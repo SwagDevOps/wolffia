@@ -43,11 +43,6 @@ class Wolffia
     container&.resolve(:'app.environment')
   end
 
-  # @return [Wolffia::Container::Injector, nil]
-  def injector
-    @container&.injector
-  end
-
   # @param [Rack::Builder] builder
   def run(builder)
     self.tap do
@@ -124,12 +119,16 @@ class Wolffia
     Dotenv.new(path: self.path).call
   end
 
+  # Register appplication startup completion.
+  #
   # Register ``__app__`` helper method
+  # Register ``container`` on injectable mixin
   #
   # @return [self]
   def register(method_name = :__app__)
     self.tap do |app|
       ::Kernel.__send__(:define_method, method_name) { app }
+      ::Wolffia::Mixins::Injectable.register_container(container).freeze
     end
   end
 
@@ -150,6 +149,7 @@ class Wolffia
       end
     end
   end
+
   # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   # Make a middleware from given builder.

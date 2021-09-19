@@ -8,62 +8,89 @@
 
 require_relative '../mixins'
 
-# Provide class-level injector accessor  and inject method
+# Provide class-level injector accessor and inject method
 #
-# @see https://dry-rb.org/gems/dry-auto_inject/0.6/basic-usage/
+# Some inspiration taken from ``dry-auto_inject``.
 module Wolffia::Mixins::Injectable
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+
   # @api private
   MISSING_INJECTOR_ERROR = ::Wolffia::Errors::Core::MissingInjectorError
 
-  def self.included(klass)
-    klass.extend(ClassMethods)
+  # @!method auto_inject(**injection)
+  #    Apply dependency injection
+  #    @param [Hash{Symbol => Object}] injection
+  #    @return [self]
+
+  def initialize(**injection)
+    Handler.new(self.class).injection.merge(injection).then do |dependencies|
+      auto_inject(**dependencies)
+    end
   end
 
-  # Class-methods
-  module ClassMethods
-    def inject(*args)
-      @injectables = args.compact ? args : nil
+  class << self
+    def included(klass)
+      klass.extend(ClassMethods)
     end
 
+    # @param [Wolffia::Container] container
+    #
+    # @return [Class]
+    def register_container(container)
+      self.singleton_class.tap do |klass|
+        klass.define_method(:container_retriever) do
+          -> { container }
+        end
+      end
+    end
+
+    # @api private
+    def container_retriever
+      -> { raise MISSING_INJECTOR_ERROR, 'can not retrieve container' }
+    end
+  end
+
+  # Class methods
+  module ClassMethods
     # @see https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     def new(...)
-      include_injector.yield_self { super(...) }
+      Handler.new(self).call(inject: true)&.then { |deps| super(**deps) }
+    rescue MISSING_INJECTOR_ERROR => _e # app is not started
+      super
     end
 
     def allocate(...)
-      include_injector
-    rescue MISSING_INJECTOR_ERROR # app is not started
-      super
-    ensure
+      Handler.new(self).call.then { super }
+    rescue MISSING_INJECTOR_ERROR => _e # app is not started
       super
     end
 
     protected
 
-    attr_reader :injectables
-
-    # @return [Wolffia::Injector]
-    def injector
-      # @type [Wolffia, nil] app
-      (Kernel.respond_to?(:__app__) ? Kernel.__app__ : nil).yield_self do |app|
-        (@injector || app&.injector).tap do |v|
-          raise MISSING_INJECTOR_ERROR, 'can not retrieve injector' if v.nil?
-        end
+    def auto_inject(*args, **kwargs)
+      args.concat(kwargs.to_a).map { |v| (v.is_a?(Array) ? v : [v, v]).freeze.map(&:freeze) }.then do |injectables|
+        @injectables = injectables.dup.concat(injectables).freeze unless injectables.empty?
       end
     end
 
-    # @param [Wolffia:;Injector] injector
-    def injector=(injector)
-      (@injector = injector).tap { include_injector }
-    end
+    # rubocop:disable Metrics/AbcSize
 
-    # @api private
+    # Get injectables as tuples.
     #
-    # @param [Wolffia::Injector] injector
-    #
-    # @return [Wolffia::Injector]
-    def include_injector(injector = self.injector)
-      __send__(:include, injector[*injectables]) unless injectables.to_a.empty?
+    # @return [Haah{Symbol => Symbol}]
+    def injectables
+      {}.tap do
+        return @injectables.dup.to_h.map { |k, v| [k.to_sym, v.to_sym] }.to_h if @injectables
+
+        self.ancestors[1..-1].each do |ancestor|
+          next unless ancestor.methods.include?(:injectables)
+
+          next unless ancestor.ancestors[1..-1]&.include?(::Wolffia::Mixins::Injectable)
+
+          return ancestor.__send__(:injectables) if flags.uniq.first == true
+        end
+      end
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end
