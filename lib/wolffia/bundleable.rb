@@ -13,14 +13,21 @@ module Wolffia::Bundleable
   autoload(:Pathname, 'pathname')
   autoload(:RbConfig, 'rbconfig')
 
+  # Functor executed in a bundled environment.
+  #
+  # @type [Stibium::Bundled::Bundle] bundle
+  BUNDLE_HANDLER = lambda do |bundle|
+    with_bundle(bundle) do
+      require 'kamaze/project/core_ext/pp' if gems_for(bundle)&.include?('kamaze-project')
+    end
+  end
+
   class << self
     private
 
     def included(othermod)
       # noinspection RubyNilAnalysis, RubyResolve
       Pathname.new(caller_locations.fetch(0).path).dirname.join('..').expand_path.freeze.yield_self do |basedir|
-        require 'stibium/bundled'
-      rescue ::LoadError
         loader.call(basedir)
       ensure
         othermod
@@ -33,10 +40,7 @@ module Wolffia::Bundleable
     #
     # @return [Proc]
     def bundle_handler
-      # @type [Stibium::Bundled::Bundle] bundle
-      lambda do |bundle|
-        with_bundle(bundle, ['kamaze-project']) { require 'kamaze/project/core_ext/pp' }
-      end
+      BUNDLE_HANDLER
     end
 
     # @api private
@@ -56,15 +60,26 @@ module Wolffia::Bundleable
     end
 
     # @param [Stibium::Bundled::Bundle] bundle
-    # @param [Array<String>] gems
-    def with_bundle(bundle, gems, &block)
-      return false unless bundle.locked? and bundle.installed? and Object.const_defined?(:Gem)
+    def with_bundle(bundle, &block)
+      block.call(bundle) if bundled_with?(bundle)
+    end
 
-      gems.each do |gem_name|
-        return false unless bundle.specifications.keep_if { |s| s.name == gem_name.to_s }.any?
-      end
+    # @param [Stibium::Bundled::Bundle] bundle
+    #
+    # @return [Boolean]
+    def bundled_with?(bundle)
+      bundle.locked? and bundle.installed?
+    end
 
-      block.call
+    # Get gems name from bundle specfication.
+    #
+    # @param [Stibium::Bundled::Bundle] bundle
+    #
+    # @return [Array<string>, nil]
+    def gems_for(bundle)
+      return nil unless Object.const_defined?(:Gem)
+
+      bundle.specifications.map { |v| v.name.to_s }
     end
   end
 end
