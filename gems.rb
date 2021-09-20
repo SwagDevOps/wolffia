@@ -55,4 +55,5 @@ end
 
 group :test do
   gem 'rspec', '~> 3.8'
+  gem 'simplecov', '~> 0.16'
 end
