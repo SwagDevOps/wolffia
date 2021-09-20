@@ -7,4 +7,4 @@ AllCops:
   NewCops: disable
   SuggestExtensions: false
 Style/TernaryParentheses: { Enabled: false }
-Bundler/GemFilename: { EnforcedStyle: gems.rb }
+
