@@ -18,13 +18,13 @@ describe Wolffia, :wolffia do
     it { expect(described_class).to have_constant(k) }
   end
 
-  it do
-    lambda do
-      require 'kamaze/version'
+  :VERSION.then do |const|
+    context ".#{const}" do
+      let(:version_class) do
+        (require 'kamaze/version').then { Kamaze::Version }
+      end
 
-      Kamaze::Version
-    end.call.tap do |klass|
-      expect(described_class.const_get(:VERSION)).to be_a(klass)
+      it { expect(described_class.const_get(const)).to be_a(version_class) }
     end
   end
 end
