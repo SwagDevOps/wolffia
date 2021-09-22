@@ -42,6 +42,14 @@ module Wolffia::HasPaths
     self.bootstrap_path.join('middlewares')
   end
 
+  # Get path to the commands declarations.
+  #
+  # @return [Pathname]
+  def commands_path
+    # noinspection RubyMismatchedReturnType
+    self.bootstrap_path.join('commands')
+  end
+
   # Get path where services definitions are stored.
   #
   # @see https://github.com/dry-rb/dry-container
