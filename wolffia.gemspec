@@ -46,6 +46,7 @@ Gem::Specification.new do |s|
     "lib/wolffia/mixins/env.rb",
     "lib/wolffia/mixins/injectable.rb",
     "lib/wolffia/mixins/injectable/handler.rb",
+    "lib/wolffia/mixins/injectable/visitor.rb",
     "lib/wolffia/version.rb",
     "lib/wolffia/version.yml",
   ]
