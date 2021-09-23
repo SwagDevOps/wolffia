@@ -46,7 +46,7 @@ class Wolffia::Container::Builder
     container do |c|
       c.populate(:'http.router') { router.register }
       files.each { |file| c.load_file(file) }
-      c[:'http.router'] = c.resolve(:'http.router').tap { |router| router.__send__(:container=, c) }
+      c[:'http.router'] = c.resolve(:'http.router').tap { |router| router.bind(c) }
     end
   end
 

@@ -84,12 +84,18 @@ class Wolffia::HTTP::Router < Hanami::Router
     Pathname.new(filepath).realpath.tap { |file| self.instance_eval(file.read, file.to_s, 1) }
   end
 
-  protected
-
-  # @api private
+  # Bind given container
   #
-  # @return [Wolffia::Container]
-  attr_reader :container
+  # @param [Wolffia::Container]
+  def bind(container)
+    self.tap do
+      unless container.keys.empty?
+        self.controllers.to_h.each_key { |klass| self.controllers[klass] = self.make(klass) }
+      end
+    end
+  end
+
+  protected
 
   # Load routes from given file.
   #
@@ -108,12 +114,6 @@ class Wolffia::HTTP::Router < Hanami::Router
 
   def controllers
     @controllers ||= ::Concurrent::Hash.new
-  end
-
-  def container=(container)
-    (@container = container).tap do
-      self.controllers.to_h.each_key { |klass| self.controllers[klass] = self.make(klass) }
-    end
   end
 
   # Get an instance for given controller class.
