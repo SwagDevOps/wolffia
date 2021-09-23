@@ -8,8 +8,26 @@
 
 require_relative '../router'
 
-# Define handler responding to routes
-module Wolffia::HTTP::Router::HasHandler
+# Build handlers responding to routes
+class Wolffia::HTTP::Router::HandlerBuilder
+  def initialize(resolver)
+    @resolver = resolver
+  end
+
+  # Options according to handler support
+  #
+  # @param [Hash{Symbol => Object}] options
+  #
+  # @return [Hash{Symbol => Object}]
+  def call(options)
+    options.key?(:to) ? optionize(options) : options
+  end
+
+  protected
+
+  # @return [Proc]
+  attr_reader :resolver
+
   # @return [Proc]
   def handler
     # @type [Class] klass
@@ -17,28 +35,11 @@ module Wolffia::HTTP::Router::HasHandler
     lambda do |klass, method|
       # @type [Hash{String => Object}] env
       lambda do |env|
-        instance_for(klass).then do |controller|
+        resolver.call(klass).then do |controller|
           controller.actions.fetch(method.to_sym).then do |action|
             respond_with(action, env: env, controller: controller)
           end
         end
-      end
-    end
-  end
-
-  protected
-
-  # Options according to handler support
-  #
-  # @param [Hash{Symbol => Object}] options
-  #
-  # @return [Hash{Symbol => Object}]
-  def handleable(options)
-    options.tap do
-      return options unless options.key?(:to)
-
-      options[:to] = options[:to].then do |action|
-        action.is_a?(Array) ? self.handler.call(*action) : action
       end
     end
   end
@@ -55,6 +56,19 @@ module Wolffia::HTTP::Router::HasHandler
         (controller&.headers || {}).merge(headers).transform_keys(&:to_s),
         env['REQUEST_METHOD'] == 'HEAD' ? [] : body # avoid bug with (at least) thin server
       ]
+    end
+  end
+
+  # Options according to handler support
+  #
+  # @param [Hash{Symbol => Object}] options
+  #
+  # @return [Hash{Symbol => Object}]
+  def optionize(options)
+    options.tap do
+      options[:to] = options.fetch(:to).then do |action|
+        action.is_a?(Array) ? self.handler.call(*action) : action
+      end
     end
   end
 end

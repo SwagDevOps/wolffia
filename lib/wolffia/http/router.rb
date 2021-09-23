@@ -13,7 +13,6 @@ require 'hanami/router'
 class Wolffia::HTTP::Router < Hanami::Router
   autoload(:Pathname, 'pathname')
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
-  include(::Wolffia::HTTP::Router::HasHandler)
 
   # @return [Pathname]
   attr_reader :load_path
@@ -33,48 +32,47 @@ class Wolffia::HTTP::Router < Hanami::Router
     @loadables.map { |name| Pathname.new(name.to_s).basename.to_s.gsub('.', '/').to_sym }
   end
 
+  # Register the router.
   def register
     self.tap do
-      self.loadables.each do |fp|
-        self.load_loadable(fp)
-      end
+      self.loadables.each { |fp| self.load_loadable(fp) }
     end
   end
 
   def get(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def post(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def put(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def patch(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def delete(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def trace(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def options(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   def root(options = {}, &blk)
-    super(handleable(options), &blk)
+    super(handler_for(options), &blk)
   end
 
   def redirect(path, options = {}, &blk)
-    super(path, handleable(options), &blk)
+    super(path, handler_for(options), &blk)
   end
 
   # Load routes from given file.
@@ -87,6 +85,11 @@ class Wolffia::HTTP::Router < Hanami::Router
   end
 
   protected
+
+  # @api private
+  #
+  # @return [Wolffia::Container]
+  attr_reader :container
 
   # Load routes from given file.
   #
@@ -102,9 +105,6 @@ class Wolffia::HTTP::Router < Hanami::Router
       end
     end
   end
-
-  # @return [Wolffia::Container]
-  attr_reader :container
 
   def controllers
     @controllers ||= ::Concurrent::Hash.new
@@ -138,5 +138,11 @@ class Wolffia::HTTP::Router < Hanami::Router
         instance.singleton_class.__send__(:define_method, :actions) { actions }
       end
     end
+  end
+
+  def handler_for(options)
+    lambda do |controler|
+      self.instance_for(controler)
+    end.then { |resolver| HandlerBuilder.new(resolver).call(options) }
   end
 end
