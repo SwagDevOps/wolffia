@@ -35,12 +35,12 @@ class Wolffia
     end
   end
 
-  include(::Wolffia::Mixins::Env)
   include(::Wolffia::HasPaths)
   include(::Wolffia::Inheritance)
 
+  # @return [Environment]
   def environment
-    container&.resolve(:'app.environment')
+    container.nil? ? Environment.new : container&.resolve(:'app.environment')
   end
 
   # @param [Rack::Builder] builder
@@ -59,9 +59,7 @@ class Wolffia
     def call(path: nil, &block)
       (path || caller_locations.first.path).yield_self do |fp|
         synchronize do
-          (@instance ||= self.new(path: fp)).tap do |app|
-            block&.call(app)
-          end
+          (@instance ||= self.new(path: fp)).tap { |app| block&.call(app) }
         end
       end
     end
@@ -101,6 +99,13 @@ class Wolffia
     self.register.freeze
   end
 
+  # Name for the method used to regsiter app on  ``Kernel``.
+  #
+  # @return [Symbol, nil]
+  def registered_as
+    :__app__
+  end
+
   # Set base path for application
   #
   # @param [String, Pathname] path
@@ -125,32 +130,16 @@ class Wolffia
   # Register ``container`` on injectable mixin
   #
   # @return [self]
-  def register(method_name = :__app__)
+  def register
     self.tap do |app|
-      ::Kernel.__send__(:define_method, method_name) { app }
+      ::Kernel.__send__(:define_method, self.registered_as) { app } if registered_as
       ::Wolffia::Mixins::Injectable.register_container(container).freeze
     end
   end
 
-  # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-
   def build_container
-    volatile = {
-      'http.router.loadables': self.routes,
-      'http.router.load_path': self.routes_path,
-    }
-
-    dotenv.then { Container.build(services_path, volatile) }.tap do |container|
-      container[:'app.settings'] = ::Wolffia::Config.new(config_path, self.environment).settings
-
-      self.paths.transform_keys { |k| "#{k}_path".to_sym }.tap do |paths|
-        container[:'app.paths'] = paths
-        paths.each { |name, path| container[:"app.paths.#{name}"] = path }
-      end
-    end
+    dotenv.then { Container.build(services_path, volatile) }
   end
-
-  # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
   # Make a middleware from given builder.
   #
@@ -159,5 +148,22 @@ class Wolffia
   # @param [Rack::Builder] builder
   def middleware_from(builder)
     ::Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
+  end
+
+  # Get volatile variables used to build container.
+  #
+  # @api private
+  #
+  # @return {Hash{Symbol => Object}}
+  def volatile
+    {
+      environment: self.environment,
+      paths: self.paths,
+      settings_params: [config_path, self.environment],
+      router_options: {
+        loadables: self.routes,
+        load_path: self.routes_path,
+      },
+    }
   end
 end

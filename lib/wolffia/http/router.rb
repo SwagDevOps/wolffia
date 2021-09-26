@@ -33,9 +33,14 @@ class Wolffia::HTTP::Router < Hanami::Router
   end
 
   # Register the router.
-  def register
+  #
+  # @param [Wolffia::Container] container
+  #
+  # @return [self]
+  def register(container: nil)
     self.tap do
       self.loadables.each { |fp| self.load_loadable(fp) }
+      self.bind(container) if container
     end
   end
 

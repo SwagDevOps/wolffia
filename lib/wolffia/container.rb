@@ -15,6 +15,7 @@ require 'dry-container'
 class Wolffia::Container < ::Dry::Container
   autoload(:Pathname, 'pathname')
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+  include(::Wolffia::Container::Volatile)
 
   class << self
     # @see Wolffia::Container::Builder#initialize
@@ -39,7 +40,7 @@ class Wolffia::Container < ::Dry::Container
 
   alias_method '[]=', 'register'
 
-  # Populate given key with given block return value, suing nil value for missing keys.
+  # Populate given key with given block return value, using nil values for missing keys.
   #
   # @param [String, Symbol] key
   #
@@ -57,10 +58,16 @@ class Wolffia::Container < ::Dry::Container
     end
   end
 
+  # Laod and eval given filepath (with optional variables).
+  #
+  # @param [Hash{Sybol => Object}] variables
+  #
   # @return [self]
-  def load_file(filepath)
+  def load_file(filepath, variables = {})
     self.tap do
-      Pathname.new(filepath).yield_self { |file| self.instance_eval(file.read, file.to_s, 1) }
+      volatilize(variables) do
+        Pathname.new(filepath).yield_self { |file| self.instance_eval(file.read, file.to_s, 1) }
+      end
     end
   end
 end

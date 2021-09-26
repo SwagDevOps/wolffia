@@ -11,21 +11,16 @@ require_relative '../container'
 # Build an instance of container.
 class Wolffia::Container::Builder
   autoload(:Pathname, 'pathname')
-  include(::Wolffia::Mixins::Env)
+
+  # @api private
+  SERVICES_FILE = Pathname.new(__dir__).join('services.rb').freeze
 
   # @param [String, Pathname] path
   #
   # @param [Hash] volatile volatile values used to build container
   def initialize(path, volatile = {})
     @path = Pathname.new(path.to_s).then { |v| v.directory? ? v.realpath : v }.freeze
-    @volatile = volatile.transform_keys(&:to_sym).freeze
-
-    self.freeze
-  end
-
-  # @return [Symbol]
-  def environment
-    env('APP_ENV', 'development').to_sym
+    self.volatile = volatile
   end
 
   # Files used to load services.
@@ -36,17 +31,10 @@ class Wolffia::Container::Builder
     path.glob('**/*.rb').sort
   end
 
-  # @return [String]
-  def to_path
-    self.path.to_path
-  end
-
   # @return [Wolffia::Container]
   def call
     container do |c|
-      c.populate(:'http.router') { router.register }
       files.each { |file| c.load_file(file) }
-      c[:'http.router'] = c.resolve(:'http.router').tap { |router| router.bind(c) }
     end
   end
 
@@ -62,31 +50,23 @@ class Wolffia::Container::Builder
   # @return [Pathname]
   attr_reader :path
 
+  # Volatile varaibles passed to loaded services file.
+  #
   # @return [Hash{Symbol => Object}]
   attr_reader :volatile
 
   # @yieldreturn [Wolffia::Container]
   def container
     ::Wolffia::Container.new.tap do |c|
-      c[:'app.environment'] = self.environment
-      c[:json] = json
+      c.load_file(SERVICES_FILE, volatile)
+      self.volatile = nil
 
       yield c if block_given?
     end
   end
 
-  # @api private
-  #
-  # @return [Proc]
-  def json
-    lambda do
-      (require 'json').yield_self { JSON }
-    end
-  end
-
-  # @return [Wolffia::HTTP::Router]
-  def router
-    { load_path: volatile.fetch(:'http.router.load_path'), loadables: volatile.fetch(:'http.router.loadables') }
-      .then { |options| ::Wolffia::HTTP::Router.new(**options) }
+  # @param [Hash] variables
+  def volatile=(variables)
+    @volatile = variables.to_h.transform_keys(&:to_sym).freeze
   end
 end
