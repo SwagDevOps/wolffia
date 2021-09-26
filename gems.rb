@@ -22,6 +22,7 @@ group :default do
   gem 'dry-container', '~> 0.8'
   gem 'hanami-router', '~> 1.3'
   gem 'kamaze-version', '~> 1.0'
+  gem 'rbminivents'
   gem 'stibium-bundled', '~> 0.0', '>= 0.0.4'
   gem 'sys-proc', '~> 1.1'
 end
@@ -54,6 +55,7 @@ group :doc do
 end
 
 group :test do
+  gem 'climate_control', '~> 1.0'
   gem 'rspec', '~> 3.8'
   gem 'simplecov', '~> 0.16'
 end
