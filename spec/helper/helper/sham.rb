@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../helper'
+
 # Shammable methods
-module Shammable
+module Spec::Helper::Sham
   # Singleton configuration for shams.
-  class Config < Hash
-    include Singleton
+  class Config < ::Hash
+    include ::Singleton
     autoload(:Pathname, 'pathname')
 
     class << self
@@ -14,34 +16,39 @@ module Shammable
       end
     end
 
+    def freeze
+      -> { super }.tap { self.transform_values(&:freeze) }.call
+    end
+
+    protected
+
     def initialize
       super.tap do
         self.class.defaults.each { |k, v| self[k] = v }
       end
     end
-
-    def freeze
-      -> { super }.tap { self.transform_values(&:freeze) }.call
-    end
   end
+
+  # rubocop:disable Metrics/AbcSize
 
   # Retrieve ``sham`` by given ``name``
   #
   # @param [Symbol] name
   # @return [Struct]
-  def sham(name) # rubocop:disable Metrics/AbcSize
+  def sham(name)
     shams_store.tap do |shams|
       shams[name.to_sym] ||= lambda do
-        # self.const_get(:Config)
         Config.instance.freeze[:path].join("#{name}.rb").read.yield_self do |content|
           instance_eval(content).yield_self { |v| Struct.new(*v.keys).new(*v.values) }
-        rescue Exception # rubocop:disable Lint/RescueException
+        rescue ::Exception # rubocop:disable Lint/RescueException
           [content, '-' * 70, instance_eval(content).inspect].join("\n").tap { |s| warn(s) }
           raise
         end
       end.call
     end.fetch(name.to_sym)
   end
+
+  # rubocop:enable Metrics/AbcSize
 
   protected
 

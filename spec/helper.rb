@@ -10,10 +10,6 @@ if Gem::Specification.find_all_by_name('sys-proc').any?
   Sys::Proc.progname = 'rspec'
 end
 
-require_relative('helper/local').tap do
-  self.singleton_class.instance_eval { include Local }
-end
-
 [
   :constants,
   :configure,
@@ -24,3 +20,5 @@ end
     req: req.to_s,
   }
 end
+
+require_relative('helper/helper').tap { Spec::Helper.register }
