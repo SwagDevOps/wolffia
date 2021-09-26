@@ -15,6 +15,6 @@ module Wolffia::Mixins::Env
   protected
 
   def env(key, default = nil)
-    ENV.key?(key) ? YAML.safe_load(ENV.fetch(key)) : default
+    ::ENV.key?(key) ? YAML.safe_load(::ENV.fetch(key)) : default
   end
 end
