@@ -1,0 +1,6 @@
+---
+env:
+  RACK_ENV: ''
+  APP_ENV: staging
+
+expected: staging
