@@ -1,0 +1,5 @@
+---
+env:
+  RACK_ENV: production
+
+expected: production
