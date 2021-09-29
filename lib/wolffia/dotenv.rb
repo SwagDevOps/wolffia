@@ -14,6 +14,7 @@ require_relative '../wolffia'
 class Wolffia::Dotenv
   autoload(:Pathname, 'pathname')
   autoload(:Dotenv, 'dotenv')
+  autoload(:DotenvValidator, 'dotenv_validator')
 
   def initialize(path: Dir.pwd, filename: '.env')
     self.tap do
@@ -28,8 +29,11 @@ class Wolffia::Dotenv
 
   alias to_s to_path
 
+  # Load dotenv file and validate env.
+  #
+  # @raise [RuntimeError] for missing environment variables
   def call
-    Dotenv.load(self.to_path)
+    Dotenv.load(self.to_path).tap { validator.check! }
   end
 
   protected
@@ -38,4 +42,17 @@ class Wolffia::Dotenv
   attr_reader :path
 
   attr_reader :filename
+
+  # Get env validator.
+  #
+  # @see https://github.com/fastruby/dotenv_validator
+  #
+  # @return [Module<DotenvValidator>]
+  def validator
+    DotenvValidator.tap do |klass|
+      self.path.yield_self do |path|
+        klass.singleton_class.__send__(:define_method, :root) { path }
+      end
+    end
+  end
 end
