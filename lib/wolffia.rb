@@ -124,6 +124,19 @@ class Wolffia
     Dotenv.new(path: self.path).call
   end
 
+  # Get injectable mixin.
+  #
+  # After startup completion you SHOULD freeze it:
+  #
+  # ```ruby
+  # injectable.freeze
+  # ```
+  #
+  # @return [Module]
+  def injectable
+    ::Wolffia::Mixins::Injectable
+  end
+
   # Register appplication startup completion.
   #
   # Register ``__app__`` helper method
@@ -133,10 +146,11 @@ class Wolffia
   def register
     self.tap do |app|
       ::Kernel.__send__(:define_method, self.registered_as) { app } if registered_as
-      ::Wolffia::Mixins::Injectable.register_container(container).freeze
+      injectable.register_container(container)
     end
   end
 
+  # @return [Wolffia::Container]
   def build_container
     dotenv.then { Container.build(services_path, volatile) }
   end
