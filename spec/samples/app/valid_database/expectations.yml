@@ -1,0 +1,5 @@
+---
+env:
+  DATABASE_USER: 'nikola.tesla'
+  DATABASE_PASS: '@9.gq$ZP<PQJNhc'
+  DATABASE_HOST: 'localhost'

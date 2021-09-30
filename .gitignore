@@ -15,3 +15,4 @@
 !/.rubocop.yml
 !/.solargraph.yml
 !/.yardopts
+!/spec/samples/*/*/.env
