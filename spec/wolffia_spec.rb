@@ -41,3 +41,24 @@ describe Wolffia, :wolffia do
     end
   end
 end
+
+# test some apps ------------------------------------------------------
+describe Wolffia, :wolffia do
+  sham(:app).valid_keys.each do |sample_key|
+    context "#dotenv (sample: #{sample_key})" do
+      let(:subject) { sham(:app).builders.fetch(sample_key).call }
+      let(:env) { sham(:app).expectations.fetch(sample_key).env }
+
+      it { expect(subject.__send__(:dotenv)).to be_a(::Hash) }
+      it { expect(subject.__send__(:dotenv)).to eq(env) }
+    end
+
+    context ".instance (sample: #{sample_key})" do
+      let(:builder) { sham(:app).builders.fetch(sample_key) }
+      let(:subject) { builder.call }
+      let(:subject_class) { subject.class }
+
+      it { expect(subject_class.instance).to be(subject) }
+    end
+  end
+end
