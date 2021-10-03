@@ -23,6 +23,7 @@ class Wolffia::Dotenv
     end.freeze
   end
 
+  # @return [String]
   def to_path
     self.path.join(self.filename).to_path
   end
@@ -41,6 +42,7 @@ class Wolffia::Dotenv
   # @return [Pathname]
   attr_reader :path
 
+  # @return [String]
   attr_reader :filename
 
   # Get env validator.
