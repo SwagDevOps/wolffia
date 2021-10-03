@@ -44,7 +44,7 @@ end
 
 # test some apps ------------------------------------------------------
 describe Wolffia, :wolffia do
-  sham(:app).valid_keys.each do |sample_key|
+  sham(:app).valid_env_keys.each do |sample_key|
     context "#dotenv (sample: #{sample_key})" do
       let(:subject) { sham(:app).builders.fetch(sample_key).call }
       let(:env) { sham(:app).expectations.fetch(sample_key).env }

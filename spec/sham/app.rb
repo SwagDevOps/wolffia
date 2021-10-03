@@ -35,6 +35,6 @@ paths_builder.call.then do |paths|
     paths: paths,
     builders: apps_builder.call(paths),
     expectations: expectations_builder.call(paths),
-    valid_keys: paths.keys.keep_if { |v| v.to_s.match(/^valid_.+$/) }
+    valid_env_keys: paths.keys.keep_if { |v| v.to_s.match(/^valid_env_.+$/) }
   }
 end
