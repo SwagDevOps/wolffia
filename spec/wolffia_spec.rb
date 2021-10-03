@@ -17,16 +17,6 @@ describe Wolffia, :wolffia do
   ].each do |k|
     it { expect(described_class).to have_constant(k) }
   end
-
-  :VERSION.then do |const|
-    context ".#{const}" do
-      let(:version_class) do
-        (require 'kamaze/version').then { Kamaze::Version }
-      end
-
-      it { expect(described_class.const_get(const)).to be_a(version_class) }
-    end
-  end
 end
 
 # class methods -----------------------------------------------------
