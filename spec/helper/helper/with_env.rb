@@ -18,6 +18,10 @@ module Spec::Helper::WithEnv
     end
   end
 
+  def with_empty_env(&block)
+    with_env({}, &block)
+  end
+
   # @param env [Hash]
   #
   # @see https://github.com/thoughtbot/climate_control
