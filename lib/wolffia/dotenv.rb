@@ -24,7 +24,7 @@ class Wolffia::Dotenv
   end
 
   def to_path
-    self.path.join(self.filename)
+    self.path.join(self.filename).to_path
   end
 
   alias to_s to_path
