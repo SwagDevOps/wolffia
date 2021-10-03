@@ -20,23 +20,24 @@ class Wolffia
 
   "#{__dir__}/wolffia".yield_self do |path|
     self.tap do
-      # noinspection RubyResolve
-      [:bundleable, :mixins].map { |s| require("#{path}/#{s}") }.then do
-        include(::Wolffia::Bundleable)
-        include(::Wolffia::Mixins::Autoloaded)
-        autoload(:VERSION, "#{path}/version")
+      {
+        bundleable: -> { self.include(::Wolffia::Bundleable) },
+        mixins: -> { self.include(::Wolffia::Mixins::Autoloaded) },
+        has_paths: -> { self.include(::Wolffia::HasPaths) },
+        inheritance: -> { self.include(::Wolffia::Inheritance) },
+        version: -> { self.autoload(:VERSION, "#{path}/version") }
+      }.map do |s, f|
+        # noinspection RubyResolve
+        require("#{path}/#{s}").then { f&.call }
       end
     end.autoloaded do |autoloading|
-      autoloading.except(:Bundleable, :Mixins, :VERSION)
+      autoloading.except(:Bundleable, :Mixins, :HasPaths, :Inheritance, :VERSION)
 
       {
         HTTP: 'http',
       }.tap { |kwargs| autoloading.with(**kwargs.invert) }
     end
   end
-
-  include(::Wolffia::HasPaths)
-  include(::Wolffia::Inheritance)
 
   # @return [Environment]
   def environment
