@@ -9,7 +9,7 @@
 require_relative '../http'
 
 # Describe aa middlewares loader build on top of ``Rack::Builder``.
-class Wolffia::HTTP::Middleware
+class Wolffia::HTTP::MiddlewaresLoader
   autoload(:Pathname, 'pathname')
 
   # @return [Array]
@@ -32,7 +32,9 @@ class Wolffia::HTTP::Middleware
 
   def load_file(filepath)
     Pathname.new(filepath).realpath.tap do |file|
-      builder.instance_eval(file.read, file.to_s, 1)
+      builder.instance_eval(file.read, file.to_s, 1).tap do |middleware|
+        pp(middleware)
+      end
     end
   end
 

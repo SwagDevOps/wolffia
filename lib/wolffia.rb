@@ -162,7 +162,7 @@ class Wolffia
   #
   # @param [Rack::Builder] builder
   def middleware_from(builder)
-    ::Wolffia::HTTP::Middleware.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
+    ::Wolffia::HTTP::MiddlewaresLoader.new(builder, container, load_path: middlewares_path, loadables: self.middlewares)
   end
 
   # Get volatile variables used to build container.
