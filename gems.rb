@@ -24,6 +24,7 @@ group :default do
   gem 'hanami-router', '~> 1.3'
   gem 'kamaze-version', '~> 1.0'
   gem 'rbminivents'
+  gem 'ruby_parser', '~> 3.17'
   gem 'stibium-bundled', '~> 0.0', '>= 0.0.4'
   gem 'sys-proc', '~> 1.1'
 end
