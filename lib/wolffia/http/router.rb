@@ -91,7 +91,7 @@ class Wolffia::HTTP::Router < Hanami::Router
 
   # Bind given container
   #
-  # @param [Wolffia::Container]
+  # @param [Wolffia::Container] container
   def bind(container)
     self.tap do
       unless container.keys.empty?

@@ -12,7 +12,7 @@ require_relative '../wolffia'
 class Wolffia::Environment
   include(::Wolffia::Mixins::Env)
 
-  # @qapi private
+  # @api private
   DEFAULT = 'development'
 
   # @api private

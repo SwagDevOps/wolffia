@@ -17,7 +17,7 @@ module Wolffia::Container::Volatile
 
   # Store given variables as volatile.
   #
-  # @param [Hash{Symbol => Object}]
+  # @param [Hash{Symbol => Object}] variables
   #
   # @return [self]
   def volatilize(variables, &block)
@@ -30,7 +30,7 @@ module Wolffia::Container::Volatile
     end
   end
 
-  # @param [Hash{Symbol => Object}]
+  # @param [Hash{Symbol => Object}] variables
   #
   # @return [Struct, nil]
   def make_volatile(variables)
