@@ -16,6 +16,7 @@ self.singleton_class.__send__(:define_method, :quote) do |input|
 end
 ?>
 
+# noinspection RubyLiteralArrayInspection
 Gem::Specification.new do |s|
   s.name        = #{quote(@name)}
   s.version     = #{quote(@version)}
