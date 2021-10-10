@@ -3,6 +3,7 @@
 # vim: ai ts=2 sts=2 et sw=2 ft=ruby
 # rubocop:disable all
 
+# noinspection RubyLiteralArrayInspection
 Gem::Specification.new do |s|
   s.name        = "wolffia"
   s.version     = "0.0.1"
@@ -29,7 +30,10 @@ Gem::Specification.new do |s|
     "lib/wolffia/config.rb",
     "lib/wolffia/container.rb",
     "lib/wolffia/container/builder.rb",
+    "lib/wolffia/container/services.rb",
+    "lib/wolffia/container/volatile.rb",
     "lib/wolffia/dotenv.rb",
+    "lib/wolffia/environment.rb",
     "lib/wolffia/errors.rb",
     "lib/wolffia/errors/core.rb",
     "lib/wolffia/errors/core/missing_injector_error.rb",
@@ -37,10 +41,12 @@ Gem::Specification.new do |s|
     "lib/wolffia/http.rb",
     "lib/wolffia/http/controller.rb",
     "lib/wolffia/http/middleware.rb",
+    "lib/wolffia/http/middleware/loader.rb",
+    "lib/wolffia/http/middleware/parser.rb",
     "lib/wolffia/http/request.rb",
     "lib/wolffia/http/response.rb",
     "lib/wolffia/http/router.rb",
-    "lib/wolffia/http/router/has_handler.rb",
+    "lib/wolffia/http/router/handler_builder.rb",
     "lib/wolffia/inheritance.rb",
     "lib/wolffia/mixins.rb",
     "lib/wolffia/mixins/env.rb",
@@ -55,9 +61,12 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("concurrent-ruby", ["~> 1.1"])
   s.add_runtime_dependency("config", ["~> 3.1"])
   s.add_runtime_dependency("dotenv", ["~> 2.7"])
+  s.add_runtime_dependency("dotenv_validator", ["~> 1.1"])
   s.add_runtime_dependency("dry-container", ["~> 0.8"])
   s.add_runtime_dependency("hanami-router", ["~> 1.3"])
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
+  s.add_runtime_dependency("rbminivents", ["~> 0.2"])
+  s.add_runtime_dependency("ruby_parser", ["~> 3.17"])
   s.add_runtime_dependency("stibium-bundled", ["~> 0.0", ">= 0.0.4"])
   s.add_runtime_dependency("sys-proc", ["~> 1.1"])
 end
