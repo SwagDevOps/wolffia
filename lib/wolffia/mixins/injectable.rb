@@ -27,13 +27,27 @@ require_relative '../mixins'
 module Wolffia::Mixins::Injectable
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 
-  # @api private
-  MISSING_INJECTOR_ERROR = ::Wolffia::Errors::Core::MissingInjectorError
-
   # @!method auto_inject(**injection)
+  #    @!scope class
+  #    @!visibility protected
+  #
   #    Apply dependency injection
+  #
   #    @param [Hash{Symbol => Object}] injection
   #    @return [self]
+
+  # @!attribute [r] injectables
+  #    @!scope class
+  #    @!visibility protected
+  #    @api private
+  #
+  #    Get injectables
+  #    @see ClassMethods.injectables
+  #
+  #    @return [Hash{Symbol => Symbol}]
+
+  # @api private
+  MISSING_INJECTOR_ERROR = ::Wolffia::Errors::Core::MissingInjectorError
 
   def initialize(**injection)
     Handler.new(self.class).injection.merge(injection).then do |dependencies|
@@ -99,6 +113,7 @@ module Wolffia::Mixins::Injectable
 
     # Get injectables declaration.
     #
+    # @api private
     # @return [Hash{Symbol => Symbol}]
     def injectables
       Visitor.new(self).call(@injectables.dup)
