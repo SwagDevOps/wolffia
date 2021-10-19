@@ -4,6 +4,8 @@ register(:json, memoize: true) do
   (require 'json').yield_self { JSON }
 end
 
+register(:logger, memoize: true) { ::Wolffia::Logger.new }
+
 volatile_get(:environment).tap do |environment|
   register('app.env', memoize: true) { environment }
 end
