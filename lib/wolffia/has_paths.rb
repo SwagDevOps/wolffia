@@ -15,7 +15,7 @@ module Wolffia::HasPaths
     self.base_path.join('bootstrap')
   end
 
-  # Fet path to where config files are stored.
+  # Get path to where config files are stored.
   #
   # Config helps you easily manage environment specific settings.
   #
@@ -24,6 +24,13 @@ module Wolffia::HasPaths
   # @return [Pathname]
   def config_path
     self.base_path.join('config')
+  end
+
+  # Get path to storage
+  #
+  # @return [Pathname]
+  def storage_path
+    self.base_path.join('storage')
   end
 
   # Get path to the route declarations.
