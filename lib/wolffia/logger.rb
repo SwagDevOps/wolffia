@@ -8,21 +8,25 @@
 
 require_relative '../wolffia'
 
-# Simple logger
+# Simple (file based) logger.
 class Wolffia::Logger
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
   include(::Wolffia::Mixins::Injectable)
+
   autoload(:JSON, 'json')
   autoload(:FileUtils, 'fileutils')
   autoload(:Logger, 'logger')
   autoload(:Pathname, 'pathname')
 
-  # @!attribute env
+  # @!attribute [r] env
   #   @!visibility protected
+  #   @api private
   #   @return [Wolffia::Environement]
   auto_inject(env: 'app.env')
 
-  # @!attribute storage_path
+  # @!attribute [r] storage_path
   #   @!visibility protected
+  #   @api private
   #   @return [Pathname]
   auto_inject(storage_path: 'app.paths.storage_path')
 
@@ -33,52 +37,40 @@ class Wolffia::Logger
     @directory = directory ? Pathname.new(directory) : storage_path.join('log', env)
   end
 
-  # @param [String] message
+  # @param [String|Exception] message
   # @param [Object, nil] context
-  #
-  # @return [Array<String>]
   def debug(message, context = nil)
-    add(:DEBUG, message, context)
+    log(:DEBUG, message, context)
   end
 
-  # @param [String] message
+  # @param [String|Exception] message
   # @param [Object, nil] context
-  #
-  # @return [Array<String>]
   def info(message, context = nil)
-    add(:INFO, message, context)
+    log(:INFO, message, context)
   end
 
-  # @param [String] message
+  # @param [String|Exception] message
   # @param [Object, nil] context
-  #
-  # @return [Array<String>]
   def warn(message, context = nil)
-    add(:WARN, message, context)
+    log(:WARN, message, context)
   end
 
-  # @param [String] message
+  # @param [String|Exception] message
   # @param [Object, nil] context
-  #
-  # @return [Array<String>]
   def error(message, context = nil)
-    add(:ERROR, message, context)
+    log(:ERROR, message, context)
   end
 
-  # @param [String] message
+  # @param [String|Exception] message
   # @param [Object. nil] context
-  #
-  # @return [Array<String>]
   def fatal(message, context = nil)
-    add(:FATAL, message, context)
+    log(:FATAL, message, context)
   end
 
   # @param [String] message
   # @param [Object, nil] context
-  #
-  # @return [Array<String>]
   def unknown(message, context = nil)
-    add(:UNKNOWN, message, context)
+    log(:UNKNOWN, message, context)
   end
 
   protected
@@ -89,6 +81,8 @@ class Wolffia::Logger
   # @return [Integer]
   attr_reader :pid
 
+  # @api private
+  #
   # @return [Module<FileUtils>]
   def fs
     FileUtils
@@ -105,6 +99,9 @@ class Wolffia::Logger
     end
   end
 
+  # Create file and directories, and return filepath.
+  #
+  # @return [Pathname]
   def file!
     self.file.tap do |file|
       fs.mkdir_p(file.dirname)
@@ -112,13 +109,15 @@ class Wolffia::Logger
     end
   end
 
+  # @api private
+  #
   # @return [Logger]
   def logger
-    Logger.new(file!).tap do |logger|
-      logger.formatter = self.formatter
-    end
+    Logger.new(file!, formatter: self.formatter)
   end
 
+  # @api private
+  #
   # @return [Proc]
   def formatter
     proc do |severity, datetime, _progname, message|
@@ -128,19 +127,26 @@ class Wolffia::Logger
     end
   end
 
-  # @param [String] message
-  # @param [Object, nil] context
+  # @api private
   #
-  # @return [Array<String>]
-  def add(severity, message, context = nil)
-    message.to_s.lines.map do |line|
-      line.tap do
-        ::Thread.new do
-          line = "#{line} #{JSON.generate(context)}" unless context.nil?
-
-          logger.add(Logger.const_get(severity), line.strip)
-        end
+  # @param [Symbol] severity
+  # @param [String|Exception] message
+  # @param [Object, nil] context
+  def log(severity, message, context = nil)
+    thread do
+      ::Wolffia::Logger::Loggable.new(severity: severity, message: message, context: context).then do |loggable|
+        loggable.lines.map { |line| logger.add(loggable.severity, line) }
       end
+    end
+  end
+
+  # @return [::Thread]
+  def thread(&blk)
+    ::Thread.new do
+      blk.call
+    end.tap do |thread|
+      thread.report_on_exception = true
+      thread.abort_on_exception = false
     end
   end
 end
