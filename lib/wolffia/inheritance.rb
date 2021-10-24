@@ -24,10 +24,10 @@ module Wolffia::Inheritance
     []
   end
 
-  # Cooamnds available on the CLI.
+  # Commands available on the CLI.
   #
-  # @return [Array<String, Symbol>]
+  # @return [Hash{Symbol => Wolffia::Cli::Command}]
   def commands
-    []
+    {}
   end
 end
