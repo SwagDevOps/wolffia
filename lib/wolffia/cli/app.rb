@@ -43,7 +43,7 @@ class Wolffia::Cli::App < Wolffia::Cli::Command
 
     # @param [Hash{Symbol => Class<Wolffia::Cli::Command>}] subcommands
     def subcommands=(subcommands)
-      @subcommands = subcommands.dup
+      @subcommands = subcommands.dup.sort.to_h.transform_keys(&:to_sym).freeze
     end
 
     # @param [Class<Command>] command
