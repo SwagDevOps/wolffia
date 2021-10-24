@@ -16,6 +16,7 @@ end
 
 group :default do
   gem 'autoloaded', '~> 2.3'
+  gem 'clamp', '~> 1.3'
   gem 'concurrent-ruby', '~> 1.1'
   gem 'config', '~> 3.1'
   gem 'dotenv', '~> 2.7'
