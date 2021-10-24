@@ -41,7 +41,7 @@ class Wolffia
 
   # @return [Environment]
   def environment
-    container.nil? ? Environment.new : container&.resolve(:'app.environment')
+    container.nil? ? Environment.new : container&.resolve(:'app.env')
   end
 
   # @return [Wolffia::Cli::App]
@@ -53,7 +53,7 @@ class Wolffia
   def run(builder)
     self.tap do
       self.middleware_from(builder).tap do |middleware|
-        container['http.middleware'] = middleware.register
+        container['http.middleware'] = middleware.register if builder.respond_to?(:use)
       end
 
       container.resolve(:'http.router').then { |router| builder.run(router) }
