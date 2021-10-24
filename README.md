@@ -35,7 +35,6 @@ bundle exec rerun -b -- exe/serve --server thin
 
 set -eu
 
-codeclimate analyze | grep -E '^==.*issue.*==$'
 bundle exec rake cs:pre-commit
 ```
 
