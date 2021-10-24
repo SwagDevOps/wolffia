@@ -26,8 +26,10 @@ module Wolffia::Inheritance
 
   # Commands available on the CLI.
   #
-  # @return [Hash{Symbol => Wolffia::Cli::Command}]
+  # @return [Hash{Symbol => Class<Wolffia::Cli::Command>}]
   def commands
-    {}
+    {
+      serve: ::Wolffia::Cli::Commands::ServeCommand,
+    }
   end
 end
