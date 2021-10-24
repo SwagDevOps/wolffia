@@ -1,3 +1,11 @@
+## Install
+
+```shell
+bundle config set --local clean 'true'
+bundle config set --local path 'vendor/bundle'
+bundle install --standalone
+```
+
 ## Run dev server (local)
 
 ### Better performances
@@ -19,10 +27,11 @@ bundle exec rerun -b -- rackup -p 8080 -s thin www/config.ru
 bundle exec rerun -b -- rackup -p 8080 -s webrick www/config.ru
 ```
 
-### ```exe/serve```
+### Cli ```serve```
 
 ```shell
-bundle exec rerun -b -- exe/serve --server thin
+ruby www/app.rb serve
+bundle exec rerun -b -- www/app.rb serve --server thin
 ```
 
 ## Coding Style
