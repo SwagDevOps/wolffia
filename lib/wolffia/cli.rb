@@ -35,10 +35,22 @@ module Wolffia::Cli
 
     alias call run
 
+    protected
+
+    # @param [String, nil] message
+    # @param [Integer] status
+    #
+    # @raise [SystemExit]
+    def abort(message = nil, status: 1)
+      self.class.__send__(:abort, message, status: status)
+    end
+
     class << self
       def description
         super || self.name
       end
+
+      protected
 
       # @param [String, nil] message
       # @param [Integer] status
