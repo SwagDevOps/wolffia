@@ -12,35 +12,56 @@ require_relative '../commands'
 #
 # @see https://github.com/ksylvest/rhino
 # @see https://github.com/macournoyer/thin
+# @see https://github.com/alexch/rerun
 #
 # Sample of use:
 #
 # ```shell
+# ruby www/app.rb serve
 # ruby www/app.rb serve --server thin
-# bundle exec rerun -- www/app.rb serve --server thin
+# bundle exec rerun -b -- www/app.rb serve --server thin
+# APP_ENV=staging ruby www/app.rb serve --server thin
 # ```
 class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
   self.description = 'Run a web server (based on rack)'
 
-  # @!attribute app_env
+  # @api private
+  FALLBACK_SERVER = :rackup
+
+  class << self
+    # @return [Symbol, nil]
+    def default_server
+      { rhino: :rhino, thin: :thin }
+        .map { |gem_name, server| gem?(gem_name) ? server : nil }
+        .compact.fetch(0)
+    end
+
+    protected
+
+    # @param [String, Symbol] gem_name
+    #
+    # @return [Boolean]
+    def gem?(gem_name)
+      autoload(:Gem, 'rubygems')
+
+      Gem.loaded_specs.key?(gem_name.to_s)
+    end
+  end
+
+  # @!attribute environment
   #   @!visibility protected
   #   @return [Wolffia::Environement]
-  auto_inject(app_env: 'app.env')
+  auto_inject(environment: 'app.env')
 
   # @!attribute base_path
   #   @!visibility protected
   #   @return [Pathname]
   auto_inject(base_path: 'app.paths.base_path')
 
-  # @!attribute environment
-  #   @!visibility protected
-  #   @return [Symbol]
-  option(%w[-e --environment], 'ENVIRONMENT', 'Environment')
-
   # @!attribute server
   #   @!visibility protected
   #   @return [Symbol]
-  option(%w[-s --server], 'SERVER', 'Server to run', default: :rhino)
+  option(%w[-s --server], 'SERVER', 'Server to run', default: default_server.to_s) { |s| (s || default_server)&.to_sym }
 
   # @!attribute port
   #   @!visibility protected
@@ -48,19 +69,13 @@ class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
   option(%w[-p --port], 'PORT', 'Port to listen on', default: 8080) { |s| s ? Integer(s) : 8080 }
 
   def execute
-    ENV['APP_ENV'] = options.fetch(:environment).to_s
+    options.to_h.fetch(:server).then do |server|
+      abort('Missing dependencies, install rhino and/or thin', status: 130) if server.nil?
 
-    options.to_h.fetch(:server).to_sym.then do |server|
-      ["Starting server #{server} ...", options].join("\n").each_line { |line| puts(line) }
+      warn("Starting server #{server} (environment: #{environment})...")
 
-      self.__send__(server == :rhino ? :rhino : :rackup, options)
+      serve(server.to_sym)
     end
-  end
-
-  # @return [Symbol]
-  def environment
-    # noinspection RubyResolve
-    (@environment || app_env).to_sym
   end
 
   # @return [Hash{Symbol => Object}]
@@ -69,17 +84,36 @@ class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
       port: port,
       environment: environment.to_s,
       server: server,
-      config_file: base_path.join('config.ru').to_s,
+      config_file: base_path.join('config.ru').realpath.to_s,
     }
+  end
+
+  # Get list of available servers (other than rackup servers)
+  #
+  # @return [Hash{Symbol => String}]
+  def servers
+    self.methods
+        .keep_if { |v| v.to_s.match(/^serve_[a-z]+.*/) }
+        .map { |v| [v.to_s.gsub(/^serve_/, '').to_sym, v.to_sym] }
+        .keep_if { |v| v.fetch(0).to_sym != FALLBACK_SERVER.to_sym }
+        .to_h
   end
 
   protected
 
+  # @param [Symbol] server
+  def serve(server)
+    servers.fetch(server.to_sym, "serve_#{FALLBACK_SERVER}").then do |method|
+      self.__send__(method, options)
+    end
+  end
+
   # Start a rhino server with given options.
   #
   # @param [Hash{Symbol => Object}] options
-  def rhino(options)
+  def serve_rhino(options)
     autoload(:Rhino, 'rhino')
+
     [
       '--port', options.fetch(:port),
       options.fetch(:config_file),
@@ -103,10 +137,11 @@ class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
   #  :config=>"config.ru",
   #  :server=>"thin"}
   # ```
-  def rackup(options)
+  def serve_rackup(options)
     autoload(:Rack, 'rack')
+
     {
-      environment: options.fetch(:environment),
+      environment: ENV['RACK_ENV'] || options.fetch(:environment),
       Port: options.fetch(:port),
       config: options.fetch(:config_file),
       server: options.fetch(:server).to_s,
