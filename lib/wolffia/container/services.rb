@@ -24,3 +24,7 @@ volatile_get(:router_options).tap do |options|
     ::Wolffia::HTTP::Router.new(**options).register(container: self)
   end
 end
+
+volatile_get(:commands).tap do |commands|
+  register(:cli, memoize: true) { ::Wolffia::Cli.build(commands) }
+end
