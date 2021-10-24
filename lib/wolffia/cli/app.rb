@@ -27,11 +27,11 @@ class Wolffia::Cli::App < Wolffia::Cli::Command
     def run(invocation_path = nil, arguments = nil, context = nil)
       new(invocation_path, context).run(arguments)
     rescue Clamp::UsageError => e
-      abort(["ERROR: #{e.message}", nil, "See: '#{e.command.invocation_path} --help'"].join("\n"))
+      abort([e.message, nil, "See: '%s'" % "#{e.command.invocation_path} --help".lstrip].join("\n"))
     rescue Clamp::HelpWanted => e
-      abort(e.command.help, status: 22)
+      abort(e.command.help, status: 0)
     rescue Clamp::ExecutionError => e
-      abort("ERROR: #{e.message}", status: e.status)
+      abort(e.message, status: e.status)
     rescue SignalException => e
       abort(status: 128 + e.signo)
     end

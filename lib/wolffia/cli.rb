@@ -40,10 +40,24 @@ module Wolffia::Cli
         super || self.name
       end
 
+      # @param [String, nil] message
+      # @param [Integer] status
+      #
+      # @raise [SystemExit]
       def abort(message = nil, status: 1)
-        warn(message) unless message.nil?
+        __send__(status.zero? ? :puts : :warn, message) unless message.nil?
+
         exit(status)
       end
+    end
+  end
+
+  class << self
+    # @param [Hash{Symbol => Class<Wolffia::Cli::Command>}] commands
+    #
+    # @return [Class<Wolffia::Cli::App>]
+    def build(commands)
+      Builder.call(commands)
     end
   end
 
