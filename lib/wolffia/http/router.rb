@@ -128,7 +128,9 @@ class Wolffia::HTTP::Router < Hanami::Router
   # @return [Wolffia::HTTP::Controller]
   def instance_for(controller)
     # @type [Wolffia::HTTP::Controller] instance
-    self.controllers[controller] ||= make(controller)
+    (self.controllers[controller] ||= make(controller)).tap do |instance|
+      return instance
+    end
   end
 
   # Make a instance of controller from given class.
