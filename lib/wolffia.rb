@@ -44,6 +44,11 @@ class Wolffia
     container.nil? ? Environment.new : container&.resolve(:'app.environment')
   end
 
+  # @return [Wolffia::Cli::App]
+  def cli
+    container[:cli]
+  end
+
   # @param [Rack::Builder] builder
   def run(builder)
     self.tap do
