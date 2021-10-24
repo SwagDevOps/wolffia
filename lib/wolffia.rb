@@ -172,6 +172,7 @@ class Wolffia
   # @return {Hash{Symbol => Object}}
   def volatile
     {
+      commands: self.commands,
       environment: self.environment,
       paths: self.paths,
       settings_params: [config_path, self.environment],
