@@ -26,6 +26,11 @@ Gem::Specification.new do |s|
     "README.md",
     "lib/wolffia.rb",
     "lib/wolffia/bundleable.rb",
+    "lib/wolffia/cli.rb",
+    "lib/wolffia/cli/app.rb",
+    "lib/wolffia/cli/builder.rb",
+    "lib/wolffia/cli/commands.rb",
+    "lib/wolffia/cli/commands/serve_command.rb",
     "lib/wolffia/concurrent.rb",
     "lib/wolffia/config.rb",
     "lib/wolffia/container.rb",
@@ -48,6 +53,8 @@ Gem::Specification.new do |s|
     "lib/wolffia/http/router.rb",
     "lib/wolffia/http/router/handler_builder.rb",
     "lib/wolffia/inheritance.rb",
+    "lib/wolffia/logger.rb",
+    "lib/wolffia/logger/loggable.rb",
     "lib/wolffia/mixins.rb",
     "lib/wolffia/mixins/env.rb",
     "lib/wolffia/mixins/injectable.rb",
@@ -58,6 +65,7 @@ Gem::Specification.new do |s|
   ]
 
   s.add_runtime_dependency("autoloaded", ["~> 2.3"])
+  s.add_runtime_dependency("clamp", ["~> 1.3"])
   s.add_runtime_dependency("concurrent-ruby", ["~> 1.1"])
   s.add_runtime_dependency("config", ["~> 3.1"])
   s.add_runtime_dependency("dotenv", ["~> 2.7"])
