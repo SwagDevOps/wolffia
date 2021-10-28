@@ -18,6 +18,11 @@ class Wolffia::Logger
   autoload(:Logger, 'logger')
   autoload(:Pathname, 'pathname')
 
+  # Default name for the log file.
+  #
+  # @api private
+  DEFAULT_NAME = :messages
+
   # @!attribute [r] env
   #   @!visibility protected
   #   @api private
@@ -30,11 +35,10 @@ class Wolffia::Logger
   #   @return [Pathname]
   auto_inject(storage_path: 'app.paths.storage_path')
 
-  def initialize(directory: nil, **injection)
+  def initialize(**injection, &block)
     super(**injection)
-
     @pid = Process.pid
-    @directory = directory ? Pathname.new(directory) : storage_path.join('log', env)
+    self.configure(&block)
   end
 
   # @param [String|Exception] message
@@ -75,11 +79,35 @@ class Wolffia::Logger
 
   protected
 
-  # @return [Pathname]
-  attr_reader :directory
-
   # @return [Integer]
   attr_reader :pid
+
+  # @see https://dry-rb.org/gems/dry-configurable/0.11/
+  #
+  # @return [self]
+  def configure(&blk)
+    self.tap do
+      require 'dry/configurable'
+      self.extend(::Dry::Configurable)
+      self.singleton_class.__send__(:protected, :config)
+
+      setting(:name, default: DEFAULT_NAME)
+      setting(:directory, default: storage_path.join('logs', env))
+
+      blk.call(self.config) if blk
+      self.config.freeze
+    end.freeze
+  end
+
+  # @return [Symbol]
+  def name
+    self.config.name.to_sym
+  end
+
+  # @return [Pathname]
+  def directory
+    Pathname.new(self.config.directory).dup
+  end
 
   # @api private
   #
@@ -92,9 +120,9 @@ class Wolffia::Logger
   def file
     # noinspection RubyMismatchedReturnType
     [
-      'messages',
+      name,
       Time.now.strftime('%Y-%m-%d'),
-    ].join('.').then do |fname|
+    ].map(&:to_s).join('.').then do |fname|
       directory.join("#{fname}.log")
     end
   end
