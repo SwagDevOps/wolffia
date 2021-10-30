@@ -21,6 +21,7 @@ group :default do
   gem 'config', '~> 3.1'
   gem 'dotenv', '~> 2.7'
   gem 'dotenv_validator', '~> 1.1'
+  gem 'dry-configurable', '~> 0.13'
   gem 'dry-container', '~> 0.8'
   gem 'hanami-router', '~> 1.3'
   gem 'kamaze-version', '~> 1.0'

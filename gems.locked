@@ -223,6 +223,7 @@ DEPENDENCIES
   config (~> 3.1)
   dotenv (~> 2.7)
   dotenv_validator (~> 1.1)
+  dry-configurable (~> 0.13)
   dry-container (~> 0.8)
   github-markup (~> 3.0)
   hanami-router (~> 1.3)
