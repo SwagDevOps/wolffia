@@ -18,6 +18,7 @@ module Wolffia::HasCli
   def commands
     @_commands ||= {
       serve: :ServeCommand,
+      console: (defined?(:Gem) and Gem.loaded_specs.key?('pry')) ? :ConsoleCommand : nil
     }.compact.transform_values { |v| ::Wolffia::Cli::Commands.const_get(v) }.sort.to_h
   end
 
