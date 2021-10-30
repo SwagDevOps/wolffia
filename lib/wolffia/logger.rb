@@ -12,6 +12,7 @@ require_relative '../wolffia'
 class Wolffia::Logger
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
   include(::Wolffia::Mixins::Injectable)
+  include(::Wolffia::Mixins::Configurable)
 
   autoload(:JSON, 'json')
   autoload(:FileUtils, 'fileutils')
@@ -38,7 +39,11 @@ class Wolffia::Logger
   def initialize(**injection, &block)
     super(**injection)
     @pid = Process.pid
-    self.configure(&block)
+
+    self.configurable do
+      setting(:name, default: DEFAULT_NAME)
+      setting(:directory, default: storage_path.join('logs', env))
+    end.configure(&block).freeze
   end
 
   # @param [String|Exception] message
@@ -81,23 +86,6 @@ class Wolffia::Logger
 
   # @return [Integer]
   attr_reader :pid
-
-  # @see https://dry-rb.org/gems/dry-configurable/0.11/
-  #
-  # @return [self]
-  def configure(&blk)
-    self.tap do
-      require 'dry/configurable'
-      self.extend(::Dry::Configurable)
-      self.singleton_class.__send__(:protected, :config)
-
-      setting(:name, default: DEFAULT_NAME)
-      setting(:directory, default: storage_path.join('logs', env))
-
-      blk.call(self.config) if blk
-      self.config.freeze
-    end.freeze
-  end
 
   # @return [Symbol]
   def name
