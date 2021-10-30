@@ -14,6 +14,10 @@ volatile_get(:environment).tap do |environment|
   register('app.env', memoize: true) { environment }
 end
 
+volatile_get(:'app.instance').tap do |app|
+  register('app.instance', memoize: true) { app }
+end
+
 volatile_get(:paths).tap do |paths|
   register('app.paths', memoize: true) { paths }
   paths.each { |name, path| self["app.paths.#{name}_path"] = path }

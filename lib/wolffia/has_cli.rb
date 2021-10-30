@@ -8,19 +8,21 @@
 
 require_relative '../wolffia' unless defined?(::Wolffia)
 
-# First-class methods to inherit application.
-module Wolffia::Inheritance
-  # Rack middlewares
+# Add cli method
+module Wolffia::HasCli
+  autoload(:Gem, 'rubygems')
+
+  # Commands available on the CLI.
   #
-  # @return [Array<String, Symbol>]
-  def middlewares
-    []
+  # @return [Hash{Symbol => Class<Wolffia::Cli::Command>}]
+  def commands
+    @_commands ||= {
+      serve: :ServeCommand,
+    }.compact.transform_values { |v| ::Wolffia::Cli::Commands.const_get(v) }.sort.to_h
   end
 
-  # Routes
-  #
-  # @return [Array<String, Symbol>]
-  def routes
-    []
+  # @return [Wolffia::Cli::App]
+  def cli
+    container[:cli]
   end
 end

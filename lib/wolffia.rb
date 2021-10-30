@@ -18,20 +18,47 @@ $LOAD_PATH.unshift(__dir__)
 class Wolffia
   autoload(:Pathname, 'pathname')
 
-  "#{__dir__}/wolffia".yield_self do |path|
-    self.tap do
-      {
-        bundleable: -> { self.include(::Wolffia::Bundleable) },
-        mixins: -> { self.include(::Wolffia::Mixins::Autoloaded) },
-        has_paths: -> { self.include(::Wolffia::HasPaths) },
-        inheritance: -> { self.include(::Wolffia::Inheritance) },
-        version: -> { self.autoload(:VERSION, "#{path}/version") }
-      }.map do |s, f|
-        # noinspection RubyResolve
-        require("#{path}/#{s}").then { f&.call }
-      end
-    end.autoloaded do |autoloading|
-      autoloading.except(:Bundleable, :Mixins, :HasPaths, :Inheritance, :VERSION)
+  class << self
+    protected
+
+    # @api private
+    def loader_for(**definition, &callable)
+      Class.new do
+        def initialize(**definition, &callable)
+          @file_name = definition.values.fetch(0)
+          @symbol_name = definition.keys.fetch(0)
+          @callable = callable
+        end
+
+        def call(path: nil)
+          # rubocop:disable Lint/ShadowingOuterLocalVariable
+          # noinspection RubyScope
+          (path || caller_locations.first.path.gsub(/\.rb$/, '')).yield_self do |path|
+            require("#{path}/#{@file_name}").then do
+              @symbol_name.tap { @callable.call }
+            end
+          end
+          # rubocop:enable Lint/ShadowingOuterLocalVariable
+        end
+      end.new(**definition, &callable)
+    end
+  end
+
+  # @!parse include ::Wolffia::Bundleable
+  # @!parse include ::Wolffia::Mixins::Autoloaded
+  # @!parse include ::Wolffia::HasCli
+  # @!parse include ::Wolffia::HasPaths
+  # @!parse include ::Wolffia::Inheritance
+  [
+    loader_for(Bundleable: :bundleable) { self.include(::Wolffia::Bundleable) },
+    loader_for(Mixins: :mixins) { self.include(::Wolffia::Mixins::Autoloaded) },
+    loader_for(HasCli: :has_cli) { self.include(::Wolffia::HasCli) },
+    loader_for(HasPaths: :has_paths) { self.include(::Wolffia::HasPaths) },
+    loader_for(Inheritance: :inheritance) { self.include(::Wolffia::Inheritance) },
+    loader_for(VERSION: :version) { self.autoload(:VERSION, "#{__dir__}/wolffia/version") }
+  ].map(&:call).tap do |excepts|
+    self.autoloaded do |autoloading|
+      autoloading.except(*excepts)
 
       {
         HTTP: 'http',
@@ -42,11 +69,6 @@ class Wolffia
   # @return [Environment]
   def environment
     container.nil? ? Environment.new : container&.resolve(:'app.env')
-  end
-
-  # @return [Wolffia::Cli::App]
-  def cli
-    container[:cli]
   end
 
   # @param [Rack::Builder] builder
@@ -100,7 +122,7 @@ class Wolffia
     Concurrent.call
 
     self.path = path.freeze
-    self.container = build_container
+    self.container = build_container({ 'app.instance': self })
 
     self.register.freeze
   end
@@ -156,9 +178,11 @@ class Wolffia
     end
   end
 
+  # @param [Hash{Symbol => Object}] volatile
+  #
   # @return [Wolffia::Container]
-  def build_container
-    dotenv.then { Container.build(services_path, volatile) }
+  def build_container(volatile = {})
+    dotenv.then { Container.build(services_path, self.volatile.merge(volatile)) }
   end
 
   # Make a middleware from given builder.
