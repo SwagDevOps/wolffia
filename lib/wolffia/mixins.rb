@@ -10,49 +10,10 @@ require_relative '../wolffia' unless defined?(::Wolffia)
 
 # Module namesapce
 module Wolffia::Mixins
-  # Autoload easyfier.
-  #
-  # Sample of use:
-  #
-  # ```ruby
-  # include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
-  # ```
-  #
-  # @see https://njonsson.github.io/autoloaded/
-  # @see https://github.com/njonsson/autoloaded
-  module Autoloaded
-    class << self
-      def included(klass)
-        klass.extend(ClassMethods)
-      end
-    end
+  require_relative './mixins/autoloaded'
 
-    # Class-methods
-    module ClassMethods
-      autoload(:Autoloaded, 'autoloaded')
-
-      protected
-
-      # Autoloads constants that match files in the source directory.
-      #
-      # @param [Binding] binding
-      #
-      # @yield [Autoloaded::Autoloader] autoloader
-      #
-      # @yieldreturn [Autoloaded::Autoloader]
-      def autoloaded(binding = nil, &block)
-        block ||= lambda do
-          return nil unless binding
-
-          (->(*) {}).tap do |functor|
-            functor.singleton_class.__send__(:define_method, :binding) { binding }
-          end
-        end.call
-
-        Autoloaded.module(&block)
-      end
-    end
+  # @type [::Autoloaded::Autoloader] autoloader
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding) do |autoloader|
+    autoloader.except(:Autoloaded)
   end
-
-  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
 end

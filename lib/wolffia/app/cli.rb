@@ -6,17 +6,15 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../wolffia' unless defined?(::Wolffia)
+require_relative '../app' # unless defined?(::Wolffia)
 
 # Add cli method
-module Wolffia::HasCli
-  autoload(:Gem, 'rubygems')
-
+module Wolffia::App::Cli
   # Commands available on the CLI.
   #
   # @return [Hash{Symbol => Class<Wolffia::Cli::Command>}]
   def commands
-    @_commands ||= {
+    {
       serve: :ServeCommand,
       console: (defined?(:Gem) and Gem.loaded_specs.key?('pry')) ? :ConsoleCommand : nil
     }.compact.transform_values { |v| ::Wolffia::Cli::Commands.const_get(v) }.sort.to_h

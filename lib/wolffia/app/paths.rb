@@ -6,10 +6,10 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../wolffia' unless defined?(::Wolffia)
+require_relative '../app'
 
 # Define some paths where bootstrap elements and config are stored.
-module Wolffia::HasPaths
+module Wolffia::App::Paths
   # @return [Pathname]
   def bootstrap_path
     self.base_path.join('bootstrap')
