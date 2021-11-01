@@ -42,9 +42,7 @@ class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
     #
     # @return [Boolean]
     def gem?(gem_name)
-      autoload(:Gem, 'rubygems')
-
-      Gem.loaded_specs.key?(gem_name.to_s)
+      defined?(Gem) and Gem.loaded_specs.key?(gem_name.to_s)
     end
   end
 
