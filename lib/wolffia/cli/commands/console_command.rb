@@ -14,39 +14,70 @@ require_relative '../commands'
 class Wolffia::Cli::Commands::ConsoleCommand < ::Wolffia::Cli::Command
   self.description = 'Start a console session'
 
+  autoload(:FileUtils, 'fileutils')
+
+  autoload(:Pathname, 'pathname')
+
+  # @type [::Autoloaded::Autoloader] autoloader
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding) do |autoloader|
+    autoloader.except(:Config)
+  end
+
   # @!attribute app
   #   @!visibility protected
   #   @return [Wolffia]
   auto_inject(app: 'app.instance')
 
+  # @!attribute base_path
+  #   @!visibility protected
+  #   @return [Pathname]
+  auto_inject(base_path: 'app.paths.base_path')
+
   def execute
-    options.then do |options|
-      with_pry do
-        app.instance_eval { ::Pry.start(binding, options) }
+    with_pry do
+      app.instance_eval do
+        # @see https://github.com/pry/pry/issues/1275
+        at_exit { system('stty echo') }
+
+        ::Pry.start(binding, { quiet: true })
       end
     end
+  end
+
+  # Get path to local config.
+  #
+  # @return [Pathname]
+  def config_path
+    # noinspection RubyMismatchedReturnType
+    base_path.join('.pry')
+  end
+
+  # @return [Array<Pathname>]
+  def config_files
+    # noinspection RubyMismatchedReturnType
+    [
+      Pathname.new(__FILE__.gsub(/\.rb$/, '')).join('config.rb'),
+      config_path.join('config.rb')
+    ].keep_if { |f| f.is_a?(Pathname) and f.exist? and f.file? and f.readable? }
   end
 
   protected
 
-  def options
-    { quiet: true }
+  # Variables passed to config file (as methods).
+  #
+  # @return [Hash{Symbol => Object}]
+  def config_variables
+    {
+      config_path: self.config_path,
+      prompt_builder: PromptBuilder.new,
+    }
   end
 
-  def prompt
-    proc do |_context, nesting, pry_instance, _sep|
-      "pry(#{app.environment}):#{pry_instance.input_ring.count.to_s.rjust(3, '0')}:#{nesting}"
-    end
-  end
-
+  # Execute given block with a pry context, loading configurations.
   def with_pry(&block)
     (require 'pry').then do
-      [
-        proc { |*args| "#{prompt.call(*args)}> " },
-        proc { |*args| "#{prompt.call(*args)}* " }
-      ].then do |prompts|
-        ::Pry.config.prompt = ::Pry::Prompt.new('custom', 'custom prompt', prompts)
-      end
+      FileUtils.mkdir_p(config_path)
+      self.config_files.each { |file| ConfigLoader.new(file, config_variables).call }
 
       block.call
     end
