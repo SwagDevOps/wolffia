@@ -21,6 +21,8 @@ module Wolffia::App::Cli
 
   # @return [Wolffia::Cli::App]
   def cli
-    container[:cli]
+    container.load_file("#{__dir__}/cli/services.rb").then do
+      container[:cli]
+    end
   end
 end
