@@ -14,7 +14,10 @@ require 'dry-container'
 # @see https://dry-rb.org/gems/dry-container/0.7/
 class Wolffia::Container < ::Dry::Container
   autoload(:Pathname, 'pathname')
-  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+  # @type [::Autoloaded::Autoloader] autoloader
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding) do |autoloader|
+    autoloader.except(:Services)
+  end
   include(::Wolffia::Container::Volatile)
 
   class << self
