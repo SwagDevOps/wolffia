@@ -25,12 +25,21 @@ Gem::Specification.new do |s|
     ".yardopts",
     "README.md",
     "lib/wolffia.rb",
+    "lib/wolffia/app.rb",
+    "lib/wolffia/app/cli.rb",
+    "lib/wolffia/app/cli/commands.rb",
+    "lib/wolffia/app/cli/commands/console.rb",
+    "lib/wolffia/app/cli/commands/console/config.rb",
+    "lib/wolffia/app/cli/commands/console/config_loader.rb",
+    "lib/wolffia/app/cli/commands/console/prompt_builder.rb",
+    "lib/wolffia/app/cli/commands/serve.rb",
+    "lib/wolffia/app/inheritance.rb",
+    "lib/wolffia/app/paths.rb",
     "lib/wolffia/bundleable.rb",
     "lib/wolffia/cli.rb",
     "lib/wolffia/cli/app.rb",
     "lib/wolffia/cli/builder.rb",
-    "lib/wolffia/cli/commands.rb",
-    "lib/wolffia/cli/commands/serve_command.rb",
+    "lib/wolffia/cli/services.rb",
     "lib/wolffia/concurrent.rb",
     "lib/wolffia/config.rb",
     "lib/wolffia/container.rb",
@@ -42,7 +51,6 @@ Gem::Specification.new do |s|
     "lib/wolffia/errors.rb",
     "lib/wolffia/errors/core.rb",
     "lib/wolffia/errors/core/missing_injector_error.rb",
-    "lib/wolffia/has_paths.rb",
     "lib/wolffia/http.rb",
     "lib/wolffia/http/controller.rb",
     "lib/wolffia/http/middleware.rb",
@@ -52,10 +60,11 @@ Gem::Specification.new do |s|
     "lib/wolffia/http/response.rb",
     "lib/wolffia/http/router.rb",
     "lib/wolffia/http/router/handler_builder.rb",
-    "lib/wolffia/inheritance.rb",
     "lib/wolffia/logger.rb",
     "lib/wolffia/logger/loggable.rb",
     "lib/wolffia/mixins.rb",
+    "lib/wolffia/mixins/autoloaded.rb",
+    "lib/wolffia/mixins/configurable.rb",
     "lib/wolffia/mixins/env.rb",
     "lib/wolffia/mixins/injectable.rb",
     "lib/wolffia/mixins/injectable/handler.rb",
@@ -70,6 +79,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("config", ["~> 3.1"])
   s.add_runtime_dependency("dotenv", ["~> 2.7"])
   s.add_runtime_dependency("dotenv_validator", ["~> 1.1"])
+  s.add_runtime_dependency("dry-configurable", ["~> 0.13"])
   s.add_runtime_dependency("dry-container", ["~> 0.8"])
   s.add_runtime_dependency("hanami-router", ["~> 1.3"])
   s.add_runtime_dependency("kamaze-version", ["~> 1.0"])
