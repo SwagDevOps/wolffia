@@ -10,7 +10,10 @@ require_relative '../app'
 
 # Add cli method
 module Wolffia::App::Cli
-  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+  # @type [::Autoloaded::Autoloader] autoloader
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding) do |autoloader|
+    autoloader.except(:Services)
+  end
 
   # Commands available on the CLI.
   #
