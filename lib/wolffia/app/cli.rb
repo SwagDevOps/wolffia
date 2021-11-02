@@ -6,7 +6,7 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../app' # unless defined?(::Wolffia)
+require_relative '../app'
 
 # Add cli method
 module Wolffia::App::Cli

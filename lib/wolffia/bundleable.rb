@@ -6,7 +6,7 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../wolffia' unless defined?(::Wolffia)
+require_relative '../wolffia'
 
 # @see https://github.com/SwagDevOps/stibium-bundled
 module Wolffia::Bundleable
