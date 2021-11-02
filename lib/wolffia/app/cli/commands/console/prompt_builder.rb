@@ -6,10 +6,10 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../console_command'
+require_relative '../console'
 
 # Prompt builder (using pastel).
-class Wolffia::Cli::Commands::ConsoleCommand::PromptBuilder
+class Wolffia::App::Cli::Commands::Console::PromptBuilder
   include(::Wolffia::Mixins::Injectable)
 
   # @!attribute gems

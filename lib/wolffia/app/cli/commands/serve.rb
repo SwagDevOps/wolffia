@@ -22,7 +22,7 @@ require_relative '../commands'
 # bundle exec rerun -b -- www/app.rb serve --server thin
 # APP_ENV=staging ruby www/app.rb serve --server thin
 # ```
-class Wolffia::Cli::Commands::ServeCommand < ::Wolffia::Cli::Command
+class Wolffia::App::Cli::Commands::Serve < ::Wolffia::Cli::Command
   self.description = 'Run a web server (based on rack)'
 
   # @api private

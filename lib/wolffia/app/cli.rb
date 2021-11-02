@@ -10,14 +10,13 @@ require_relative '../app' # unless defined?(::Wolffia)
 
 # Add cli method
 module Wolffia::App::Cli
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+
   # Commands available on the CLI.
   #
   # @return [Hash{Symbol => Class<Wolffia::Cli::Command>}]
   def commands
-    {
-      serve: :ServeCommand,
-      console: (defined?(:Gem) and Gem.loaded_specs.key?('pry')) ? :ConsoleCommand : nil
-    }.compact.transform_values { |v| ::Wolffia::Cli::Commands.const_get(v) }.sort.to_h
+    Commands.to_h
   end
 
   # @return [Wolffia::Cli::App]

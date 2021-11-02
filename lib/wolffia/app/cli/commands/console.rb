@@ -11,7 +11,7 @@ require_relative '../commands'
 # Provide console session (based on Pry).
 #
 # @see https://github.com/pry/pry
-class Wolffia::Cli::Commands::ConsoleCommand < ::Wolffia::Cli::Command
+class Wolffia::App::Cli::Commands::Console < ::Wolffia::Cli::Command
   self.description = 'Start a console session'
 
   autoload(:FileUtils, 'fileutils')

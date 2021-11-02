@@ -6,10 +6,10 @@
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-require_relative '../console_command'
+require_relative '../console'
 
 # Loader for configuration file(s).
-class Wolffia::Cli::Commands::ConsoleCommand::ConfigLoader
+class Wolffia::App::Cli::Commands::Console::ConfigLoader
   autoload(:Pathname, 'pathname')
 
   # @param [Pathname] file
