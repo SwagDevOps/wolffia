@@ -19,7 +19,7 @@ end
 apps_builder = lambda do |paths|
   paths.transform_values do |path|
     lambda do |env: {}|
-      Class.new(::Wolffia).then do |klass|
+      Class.new(::Wolffia::App).then do |klass|
         with_env(env) { klass.call(path: path) }
       end
     end
