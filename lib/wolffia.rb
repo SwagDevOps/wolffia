@@ -45,6 +45,7 @@ class Wolffia
   [
     preloader_for(Bundleable: :bundleable) { self.include(::Wolffia::Bundleable) },
     preloader_for(Mixins: :mixins),
+    preloader_for(VERSION: :version),
   ].map(&:call).tap do |excepts|
     # @type [::Autoloaded::Autoloader] autoloader
     include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding) do |autoloader|
