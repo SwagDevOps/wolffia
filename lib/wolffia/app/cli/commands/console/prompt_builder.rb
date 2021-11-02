@@ -39,7 +39,7 @@ class Wolffia::App::Cli::Commands::Console::PromptBuilder
 
   def make_base(context, nesting, pry_instance)
     colorize('%<identifier>s(%<environment>s):%<input_ring>s:%<nesting>s' % {
-      identifier: context == app ? 'pry' : Pry.view_clip(context),
+      identifier: ::Pry.view_clip(context),
       environment: environment.to_s,
       input_ring: pry_instance.input_ring.count.to_s.rjust(3, '0'),
       nesting: nesting
