@@ -3,13 +3,17 @@
 # constants ---------------------------------------------------------
 describe Wolffia, :wolffia do
   [
+    :App,
     :Bundleable,
+    :Cli,
     :Concurrent,
     :Config,
     :Container,
     :Dotenv,
+    :Environment,
     :Errors,
     :HTTP,
+    :Logger,
     :Mixins,
     :VERSION,
   ].each do |k|
