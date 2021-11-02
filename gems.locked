@@ -137,6 +137,7 @@ GEM
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    rb-readline (0.5.5)
     rbminivents (0.2.0)
     redcarpet (3.5.1)
     regexp_parser (2.1.1)
@@ -236,6 +237,7 @@ DEPENDENCIES
   rack-contrib (~> 2.3)
   rack-rewrite (~> 1.5)
   rake (~> 13.0)
+  rb-readline (~> 0.5)
   rbminivents (~> 0.2)
   redcarpet (~> 3.5)
   rerun!

@@ -40,6 +40,7 @@ group :development do
   # repl ---------------------------------
   gem 'interesting_methods', '~> 0.1'
   gem 'pry', '~> 0.12'
+  gem 'rb-readline', '~> 0.5'
   # middlewares --------------------------
   gem 'better_errors', '~> 2.9'
   gem 'binding_of_caller', '~> 1.0'
