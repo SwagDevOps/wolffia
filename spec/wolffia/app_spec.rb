@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# constants ---------------------------------------------------------
 describe Wolffia::App, :'wolffia/app' do
   [
     :Cli,
@@ -10,6 +11,7 @@ describe Wolffia::App, :'wolffia/app' do
   end
 end
 
+# App.call ----------------------------------------------------------
 describe Wolffia::App, :'wolffia/app' do
   :call.then do |method|
     context ".#{method}" do
@@ -20,6 +22,15 @@ describe Wolffia::App, :'wolffia/app' do
       end
     end
   end
+end
+
+# instance methods --------------------------------------------------
+describe Wolffia::App, :'wolffia/app' do
+  let(:subject) { described_class.allocate }
+
+  it { expect(subject).to respond_to(:cli).with(0).arguments }
+  it { expect(subject).to respond_to(:environment).with(0).arguments }
+  it { expect(subject).to respond_to(:run).with(1).arguments }
 end
 
 # test apps starting with valid env ---------------------------------
