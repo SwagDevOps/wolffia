@@ -49,11 +49,14 @@ module Wolffia::Mixins::Injectable
   # @api private
   MISSING_INJECTOR_ERROR = ::Wolffia::Errors::Core::MissingInjectorError
 
-  def initialize(**injection)
+  # rubocop:disable Lint/UnusedMethodArgument
+
+  def initialize(*args, **injection)
     Handler.new(self.class).injection.merge(injection).then do |dependencies|
       auto_inject(**dependencies)
     end
   end
+  # rubocop:enable Lint/UnusedMethodArgument
 
   class << self
     def included(klass)
@@ -90,9 +93,8 @@ module Wolffia::Mixins::Injectable
 
   # Class methods
   module ClassMethods
-    # @see https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
-    def new(...)
-      Handler.new(self).call(inject: true)&.then { |deps| super(**deps) }
+    def new(*args)
+      Handler.new(self).call(inject: true)&.then { |deps| super(*args, **deps) }
     rescue MISSING_INJECTOR_ERROR => _e # app is not started
       super
     end
