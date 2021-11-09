@@ -36,7 +36,7 @@ class Wolffia::Logger
   #   @return [Pathname]
   auto_inject(storage_path: 'app.paths.storage_path')
 
-  def initialize(**injection, &block)
+  def initialize(*, **injection, &block)
     super(**injection)
     @pid = Process.pid
 
