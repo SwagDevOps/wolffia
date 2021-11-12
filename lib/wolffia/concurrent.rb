@@ -14,15 +14,38 @@ require_relative '../wolffia'
 # @see https://github.com/ruby-concurrency/concurrent-ruby
 module Wolffia::Concurrent
   class << self
-    def call(name = nil)
-      constants_from(self) { |cname| self.remove_const(cname) }
-
-      # noinspection RubyResolve
-      (require ['concurrent', name].compact.join('/')).tap do
-        constants_from(::Concurrent) do |cname|
-          self.const_set(cname, ::Concurrent.const_get(cname))
+    # @return [Array<Symbol>] Symbols for loaded constants
+    def call
+      constants_from(concurrent) do |cname|
+        if !self.has?(cname) and concurrent.const_get(cname).is_a?(::Class)
+          self.const_set(cname, concurrent.const_get(cname))
         end
       end
+    end
+
+    def make(symbol, *args, **kwargs)
+      factory.call(symbol, *args, **kwargs)
+    end
+
+    # Factory for concurrent classes
+    #
+    # Sample of use:
+    #
+    # ```ruby
+    # Concurrent.factory.call(:hash)
+    # ```
+    #
+    # @return [Class]
+    def factory
+      ::Class.new do
+        def call(symbol, *args, **kwargs)
+          ::Wolffia::Concurrent.tap(&:call).then do |mod|
+            require('dry/inflector').then { ::Dry::Inflector.new }.camelize(symbol).then do |cname|
+              mod.const_get(cname).then { |klass| klass.new(*args, **kwargs) }
+            end
+          end
+        end
+      end.new
     end
 
     protected
@@ -32,11 +55,19 @@ module Wolffia::Concurrent
     #
     # @return [Array<Symbol>]
     def constants_from(source, &block)
-      source.constants.map(&:to_sym).tap do |name|
+      source.constants.sort.map(&:to_sym).tap do |name|
         next unless block
 
         name.each { |v| block.call(v) }
       end
+    end
+
+    def has?(cname)
+      constants_from(self).include?(cname)
+    end
+
+    def concurrent
+      require('concurrent').then { ::Concurrent }
     end
   end
 end
