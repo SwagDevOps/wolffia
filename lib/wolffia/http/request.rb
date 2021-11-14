@@ -14,7 +14,10 @@ class Wolffia::HTTP::Request
   attr_reader :env
 
   def initialize(env)
-    @env = env
+    super().tap do
+      @env = env.dup.freeze
+      @memo = ::Wolffia::Concurrent.factory.make(:hash)
+    end.freeze
   end
 
   # Get router params.
@@ -28,7 +31,9 @@ class Wolffia::HTTP::Request
   #
   # @return [Hash{String => String}]
   def headers
-    env.select { |k, _| k.match?(/^HTTP_/) }.then { |headers| prepare_headers(headers) }
+    self.memoize(:headers) do
+      env.select { |k, _| k.match?(/^HTTP_/) }.then { |headers| prepare_headers(headers) }
+    end
   end
 
   # @return [Symbol, nil]
@@ -50,16 +55,37 @@ class Wolffia::HTTP::Request
 
   alias to_h env
 
+  # Returns an array of acceptable media types for the response
+  def accept
+    self.memoize(:accept) { make_accept(self.env.dup) }
+  end
+
   protected
+
+  # @return [Concurrent::Hash]
+  attr_reader :memo
 
   # @param [Hash{String => String}] headers
   #
-  # @return [Hash{String => String}]
+  # @return [Hash{Symbol => String}]
   def prepare_headers(headers)
     lambda do |header|
-      header.to_s.sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-').freeze
+      header.to_s.sub(/^HTTP_/, '').downcase
     end.yield_self do |normalizer|
-      headers.transform_keys { |header| normalizer.call(header) }.sort.to_h
+      headers.transform_keys { |header| normalizer.call(header).to_sym }.sort.to_h
     end
+  end
+
+  # @param [Hash{String => Object}] env
+  #
+  # @return [Array<Wolffia::HTTP::AcceptEntry>]
+  def make_accept(env)
+    (env['HTTP_ACCEPT'].to_s.empty? ? '*/*' : env['HTTP_ACCEPT']).to_s.then do |accpet|
+      accpet.scan(::Wolffia::HTTP::HEADER_VALUE_WITH_PARAMS).map! { |s| ::Wolffia::HTTP::AcceptEntry.new(s) }.sort
+    end
+  end
+
+  def memoize(key, &block)
+    self.memo[key.to_sym] ||= block.call
   end
 end
