@@ -26,7 +26,9 @@ class Wolffia::HTTP::Request
   #
   # @return [Hash{Symbol => String}]
   def params
-    (env['router.params'] || {}).transform_keys(&:to_sym)
+    self.memoize(:params) do
+      (env['router.params'] || {}).transform_keys(&:to_sym)
+    end
   end
 
   # Get HTTP headers (indexed as lowercase symbols).
@@ -38,7 +40,9 @@ class Wolffia::HTTP::Request
     end
   end
 
-  # Returns an array of acceptable media types for the response
+  # Returns an array of acceptable media types for the response.
+  #
+  # @return [Array<Wolffia::HTTP::AcceptEntry>]
   def accept
     self.memoize(:accept) do
       ::Wolffia::HTTP::Request::Utils::AcceptParser.new(env).call
