@@ -76,8 +76,6 @@ class Wolffia::App
   alias base_path path
 
   def initialize(path: nil)
-    ::Wolffia::Concurrent.call
-
     self.path = path.freeze
     self.container = build_container({ 'app.instance': self })
 
