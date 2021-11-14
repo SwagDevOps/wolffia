@@ -34,7 +34,14 @@ class Wolffia::HTTP::Request
   # @return [Hash{Symbol => String}]
   def headers
     ::Wolffia::HTTP::Request::Utils::HeadersParser.new(env).then do |parser|
-      self.memoize(:headers, &parser.to_proc)
+      self.memoize(:headers) { parser.call }
+    end
+  end
+
+  # Returns an array of acceptable media types for the response
+  def accept
+    ::Wolffia::HTTP::Request::Utils::AcceptParser.new(env).then do |parser|
+      self.memoize(:accept) { parser.call }
     end
   end
 
@@ -57,24 +64,10 @@ class Wolffia::HTTP::Request
 
   alias to_h env
 
-  # Returns an array of acceptable media types for the response
-  def accept
-    self.memoize(:accept) { make_accept(self.env.dup) }
-  end
-
   protected
 
   # @return [Concurrent::Hash]
   attr_reader :memo
-
-  # @param [Hash{String => Object}] env
-  #
-  # @return [Array<Wolffia::HTTP::AcceptEntry>]
-  def make_accept(env)
-    (env['HTTP_ACCEPT'].to_s.empty? ? '*/*' : env['HTTP_ACCEPT']).to_s.then do |accpet|
-      accpet.scan(::Wolffia::HTTP::HEADER_VALUE_WITH_PARAMS).map! { |s| ::Wolffia::HTTP::AcceptEntry.new(s) }.sort
-    end
-  end
 
   def memoize(key, &block)
     self.memo[key.to_sym] ||= block.call
