@@ -10,6 +10,8 @@ require_relative '../http'
 
 # Describe an HTTP request
 class Wolffia::HTTP::Request
+  include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+
   # @return [Hash{String => Object}]
   attr_reader :env
 
@@ -27,12 +29,12 @@ class Wolffia::HTTP::Request
     (env['router.params'] || {}).transform_keys(&:to_sym)
   end
 
-  # Get HTTP headers.
+  # Get HTTP headers (indexed as lowercase symbols).
   #
-  # @return [Hash{String => String}]
+  # @return [Hash{Symbol => String}]
   def headers
-    self.memoize(:headers) do
-      env.select { |k, _| k.match?(/^HTTP_/) }.then { |headers| prepare_headers(headers) }
+    ::Wolffia::HTTP::Request::Utils::HeadersParser.new(env).then do |parser|
+      self.memoize(:headers, &parser.to_proc)
     end
   end
 
@@ -64,17 +66,6 @@ class Wolffia::HTTP::Request
 
   # @return [Concurrent::Hash]
   attr_reader :memo
-
-  # @param [Hash{String => String}] headers
-  #
-  # @return [Hash{Symbol => String}]
-  def prepare_headers(headers)
-    lambda do |header|
-      header.to_s.sub(/^HTTP_/, '').downcase
-    end.yield_self do |normalizer|
-      headers.transform_keys { |header| normalizer.call(header).to_sym }.sort.to_h
-    end
-  end
 
   # @param [Hash{String => Object}] env
   #
