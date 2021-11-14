@@ -11,4 +11,7 @@ require_relative '../wolffia'
 # Module namesapce
 module Wolffia::HTTP
   include(::Wolffia::Mixins::Autoloaded).autoloaded(self.binding)
+
+  HEADER_PARAM = /\s*[\w.]+=(?:[\w.]+|"(?:[^"\\]|\\.)*")?\s*/.freeze
+  HEADER_VALUE_WITH_PARAMS = %r{(?:(?:\w+|\*)/(?:\w+(?:\.|-|\+)?|\*)*)\s*(?:;#{HEADER_PARAM})*}.freeze
 end
