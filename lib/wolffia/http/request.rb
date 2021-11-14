@@ -33,15 +33,15 @@ class Wolffia::HTTP::Request
   #
   # @return [Hash{Symbol => String}]
   def headers
-    ::Wolffia::HTTP::Request::Utils::HeadersParser.new(env).then do |parser|
-      self.memoize(:headers) { parser.call }
+    self.memoize(:headers) do
+      ::Wolffia::HTTP::Request::Utils::HeadersParser.new(env).call
     end
   end
 
   # Returns an array of acceptable media types for the response
   def accept
-    ::Wolffia::HTTP::Request::Utils::AcceptParser.new(env).then do |parser|
-      self.memoize(:accept) { parser.call }
+    self.memoize(:accept) do
+      ::Wolffia::HTTP::Request::Utils::AcceptParser.new(env).call
     end
   end
 
